@@ -4,15 +4,187 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>まめちしき辞典 - ChiePedia</title>
+  <!-- Google Fonts: 読みやすい日本語明朝・ゴシックの組み合わせ -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&family=Shippori+Mincho:wght@600;700&display=swap" rel="stylesheet" />
+  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- 分離したCSSファイルの読み込み -->
-  <link rel="stylesheet" href="style.css" />
+
+  <!-- =========================================================
+       [style.css 相当] アプリ全体のカスタムスタイル定義
+       ========================================================= -->
+  <style id="app-style-css">
+    :root {
+      --bg-paper: #FAF8F5;
+      --bg-card: #FFFFFF;
+      --text-ink: #1E293B;
+      --text-muted: #64748B;
+      --accent-amber: #D97706;
+      --accent-amber-light: #FEF3C7;
+      --accent-amber-dark: #B45309;
+      --border-subtle: #E2E8F0;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      margin: 0;
+      background-color: var(--bg-paper);
+      color: var(--text-ink);
+      font-family: 'Noto Sans JP', 'Inter', sans-serif;
+      line-height: 1.7;
+      overflow-x: hidden;
+    }
+
+    .font-serif-title {
+      font-family: 'Shippori Mincho', 'Noto Sans JP', serif;
+    }
+
+    /* ヘッダーのすりガラス効果 */
+    .glass-header {
+      background: rgba(250, 248, 245, 0.88);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(226, 232, 240, 0.9);
+    }
+
+    /* タグバーの横スクロール（スクロールバー非表示） */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    /* 豆知識カードのホバー・タップアニメーション */
+    .trivia-card {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 1.25rem;
+      box-shadow: 0 4px 20px -2px rgba(30, 41, 59, 0.05);
+      transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1),
+                  box-shadow 0.22s cubic-bezier(0.22, 1, 0.36, 1),
+                  border-color 0.22s ease;
+    }
+
+    @media (hover: hover) {
+      .trivia-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 12px 28px -6px rgba(30, 41, 59, 0.1);
+        border-color: #CBD5E1;
+      }
+    }
+
+    /* 添付画像サムネイル枠 */
+    .trivia-image-wrapper {
+      position: relative;
+      overflow: hidden;
+      border-radius: 0.875rem;
+      border: 1px solid #E2E8F0;
+      background: #F8FAFC;
+      cursor: zoom-in;
+    }
+
+    .trivia-image-wrapper img,
+    .trivia-image-wrapper svg {
+      transition: transform 0.35s ease;
+    }
+
+    @media (hover: hover) {
+      .trivia-image-wrapper:hover img,
+      .trivia-image-wrapper:hover svg {
+        transform: scale(1.03);
+      }
+    }
+
+    /* フルスクリーン画像モーダル */
+    .fullscreen-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      background-color: rgba(15, 23, 42, 0.94);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+    }
+
+    .fullscreen-modal.is-open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-image-stage {
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 4.5rem 1rem 5.5rem 1rem;
+      overflow: auto;
+    }
+
+    .modal-image-stage img {
+      max-width: 100%;
+      max-height: 100%;
+      width: auto;
+      height: auto;
+      object-fit: contain;
+      border-radius: 0.75rem;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.65);
+      transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+      transform-origin: center center;
+    }
+
+    .modal-image-stage img.is-zoomed {
+      transform: scale(1.65);
+      cursor: zoom-out;
+    }
+
+    /* 4ファイル構成コード表示モーダル */
+    .code-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 110;
+      background-color: rgba(15, 23, 42, 0.7);
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+    }
+
+    .code-modal.is-open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    /* iPad 11インチ (834px〜1194px) 向けの最適化調整 */
+    @media (min-width: 768px) and (max-width: 1280px) {
+      .ipad-container {
+        max-width: 1040px;
+      }
+    }
+  </style>
 </head>
-<body class="min-h-screen flex flex-col">
-  <!-- ヘッダー・検索バー・メイングリッド・画像モーダル本体 -->
+<body class="min-h-screen flex flex-col selection:bg-amber-200 selection:text-slate-900">
+
+  <!-- =========================================================
+       ヘッダー＆検索エリア（スマートフォン・iPad 11インチ両対応）
+       ========================================================= -->
   <header class="glass-header sticky top-0 z-40">
     <div class="max-w-5xl ipad-container mx-auto px-4 sm:px-6 pt-3.5 pb-3">
       <!-- トップバー：アプリタイトル ＆ 4ファイル出力ボタン -->
@@ -21,7 +193,7 @@
           <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 text-white flex items-center justify-center shadow-sm shrink-0">
             <!-- 本・電球アイコン SVG -->
             <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
             </svg>
           </div>
           <div>
@@ -38,9 +210,14 @@
         </div>
 
         <!-- 4ファイル構成ソースコード表示ボタン -->
-        <button id="openCodeModalBtn" type="button" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs sm:text-sm font-medium bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 active:scale-95 transition shadow-xs shrink-0" title="index.html / style.css / system.js / contents.js の4ファイルを表示">
+        <button
+          id="openCodeModalBtn"
+          type="button"
+          class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs sm:text-sm font-medium bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 active:scale-95 transition shadow-xs shrink-0"
+          title="index.html / style.css / system.js / contents.js の4ファイルを表示"
+        >
           <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path>
+            <path stroke-linecap="round" stroke-linejoin="round" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
           </svg>
           <span>4ファイル構成</span>
         </button>
@@ -50,491 +227,100 @@
       <div class="relative flex items-center">
         <span class="absolute left-3.5 text-slate-400 pointer-events-none">
           <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 103.5 10.5a7.5 7.5 0 0013.15 6.15z"></path>
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 103.5 10.5a7.5 7.5 0 0013.15 6.15z" />
           </svg>
         </span>
-        <input id="searchInput" type="search" inputmode="search" placeholder="豆知識名やタグ名で検索（例：フラミンゴ、宇宙、食べ物…）" aria-label="豆知識名やタグ名で検索" class="w-full pl-11 pr-11 py-3 rounded-2xl bg-white border border-slate-200 text-sm sm:text-base text-slate-800 placeholder-slate-400 focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition shadow-xs">
-        <button id="clearSearchBtn" type="button" aria-label="検索条件をクリア" class="hidden absolute right-2.5 p-2 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition">
+        <input
+          id="searchInput"
+          type="search"
+          inputmode="search"
+          placeholder="豆知識名やタグ名で検索（例：フラミンゴ、宇宙、食べ物…）"
+          aria-label="豆知識名やタグ名で検索"
+          class="w-full pl-11 pr-11 py-3 rounded-2xl bg-white border border-slate-200 text-sm sm:text-base text-slate-800 placeholder-slate-400 focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition shadow-xs"
+        />
+        <button
+          id="clearSearchBtn"
+          type="button"
+          aria-label="検索条件をクリア"
+          class="hidden absolute right-2.5 p-2 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition"
+        >
           <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
       </div>
 
       <!-- タグフィルターピル一覧 -->
-      <div class="mt-2.5 flex items-center gap-2 overflow-x-auto no-scrollbar pb-0.5" id="tagFilterContainer" role="tablist" aria-label="タグで絞り込み"><button type="button" role="tab" aria-selected="true" class="shrink-0 px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-semibold bg-amber-600 text-white shadow-xs transition">すべて (12)</button><button type="button" role="tab" aria-selected="false" class="shrink-0 px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-medium bg-white text-slate-600 border border-slate-200 hover:bg-amber-50 hover:text-amber-800 hover:border-amber-200 transition">#動物 (4)</button><button type="button" role="tab" aria-selected="false" class="shrink-0 px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-medium bg-white text-slate-600 border border-slate-200 hover:bg-amber-50 hover:text-amber-800 hover:border-amber-200 transition">#生き物 (4)</button><button type="button" role="tab" aria-selected="false" class="shrink-0 px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-medium bg-white text-slate-600 border border-slate-200 hover:bg-amber-50 hover:text-amber-800 hover:border-amber-200 transition">#雑学 (6)</button><button type="button" role="tab" aria-selected="false" class="shrink-0 px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-medium bg-white text-slate-600 border border-slate-200 hover:bg-amber-50 hover:text-amber-800 hover:border-amber-200 transition">#科学 (5)</button><button type="button" role="tab" aria-selected="false" class="shrink-0 px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-medium bg-white text-slate-600 border border-slate-200 hover:bg-amber-50 hover:text-amber-800 hover:border-amber-200 transition">#建築 (1)</button><button type="button" role="tab" aria-selected="false" class="shrink-0 px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-medium bg-white text-slate-600 border border-slate-200 hover:bg-amber-50 hover:text-amber-800 hover:border-amber-200 transition">#世界 (1)</button><button type="button" role="tab" aria-selected="false" class="shrink-0 px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-medium bg-white text-slate-600 border border-slate-200 hover:bg-amber-50 hover:text-amber-800 hover:border-amber-200 transition">#海 (1)</button><button type="button" role="tab" aria-selected="false" class="shrink-0 px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-medium bg-white text-slate-600 border border-slate-200 hover:bg-amber-50 hover:text-amber-800 hover:border-amber-200 transition">#食べ物 (2)</button><button type="button" role="tab" aria-selected="false" class="shrink-0 px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-medium bg-white text-slate-600 border border-slate-200 hover:bg-amber-50 hover:text-amber-800 hover:border-amber-200 transition">#宇宙 (2)</button><button type="button" role="tab" aria-selected="false" class="shrink-0 px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-medium bg-white text-slate-600 border border-slate-200 hover:bg-amber-50 hover:text-amber-800 hover:border-amber-200 transition">#人体 (2)</button><button type="button" role="tab" aria-selected="false" class="shrink-0 px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-medium bg-white text-slate-600 border border-slate-200 hover:bg-amber-50 hover:text-amber-800 hover:border-amber-200 transition">#日常 (3)</button><button type="button" role="tab" aria-selected="false" class="shrink-0 px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-medium bg-white text-slate-600 border border-slate-200 hover:bg-amber-50 hover:text-amber-800 hover:border-amber-200 transition">#歴史 (1)</button><button type="button" role="tab" aria-selected="false" class="shrink-0 px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-medium bg-white text-slate-600 border border-slate-200 hover:bg-amber-50 hover:text-amber-800 hover:border-amber-200 transition">#日本 (1)</button></div>
+      <div class="mt-2.5 flex items-center gap-2 overflow-x-auto no-scrollbar pb-0.5" id="tagFilterContainer" role="tablist" aria-label="タグで絞り込み">
+        <!-- JS (system.js) により動的にタグボタンを生成 -->
+      </div>
     </div>
   </header>
+
+  <!-- =========================================================
+       メインコンテンツ：検索ステータス ＆ 豆知識カード一覧
+       ========================================================= -->
   <main class="flex-1 max-w-5xl ipad-container w-full mx-auto px-4 sm:px-6 py-5 sm:py-7">
     <!-- 件数表示 ＆ フィルタ状態バー -->
     <div class="flex flex-wrap items-center justify-between gap-2 mb-4 sm:mb-5">
-      <p id="resultCountText" class="text-xs sm:text-sm font-medium text-slate-600">全 12 件の豆知識を表示中</p>
+      <p id="resultCountText" class="text-xs sm:text-sm font-medium text-slate-600">
+        全 0 件の豆知識を表示中
+      </p>
       <div class="flex items-center gap-2">
         <label class="inline-flex items-center gap-1.5 text-xs sm:text-sm text-slate-600 cursor-pointer select-none bg-white px-3 py-1.5 rounded-xl border border-slate-200 hover:bg-slate-50 transition">
-          <input id="onlyWithImageCheckbox" type="checkbox" class="rounded text-amber-600 focus:ring-amber-500 w-4 h-4">
+          <input id="onlyWithImageCheckbox" type="checkbox" class="rounded text-amber-600 focus:ring-amber-500 w-4 h-4" />
           <span>画像付きのみ表示</span>
         </label>
       </div>
     </div>
 
     <!-- 豆知識カードグリッド（スマホ：1列 / iPad 11インチ以上：2列） -->
-    <section id="triviaGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 items-start" aria-live="polite"><article class="trivia-card p-5 sm:p-6 flex flex-col justify-between">
-            <div>
-              <div class="flex items-center justify-between gap-2 mb-2.5">
-                <span class="text-xs font-bold tracking-wider text-amber-700 bg-amber-100/80 px-2.5 py-0.5 rounded-md">
-                  No.01
-                </span>
-                <span class="text-[11px] font-medium text-slate-500 flex items-center gap-1">🖼️ 図解あり</span>
-              </div>
-
-              <h2 class="font-serif-title text-lg sm:text-xl font-bold text-slate-900 leading-snug mb-3">
-                フラミンゴの羽がピンク色なのは食べ物のせい
-              </h2>
-
-              <p class="text-sm sm:text-[15px] text-slate-700 leading-relaxed">
-                フラミンゴは生まれたときは白色や灰色の羽をしています。主食である藍藻類（スピルリナなど）や甲殻類に含まれる赤色色素「カンタキサンチン」を体内で分解・吸収することで、羽が鮮やかなピンク色へと変化します。動物園では色を保つために色素を含む専用エサを与えています。
-              </p>
-
-              
-              <div class="mt-4">
-                <div class="trivia-image-wrapper group" role="button" tabindex="0" aria-label="フラミンゴの羽がピンク色なのは食べ物のせいの画像を全画面で拡大表示" data-open-modal-id="1">
-                  <img src="data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20800%20460%22%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Cdefs%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%3ClinearGradient%20id%3D%22bg1%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%221%22%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%23FFF1F2%22%2F%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%23FFE4E6%22%2F%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%3C%2FlinearGradient%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3C%2Fdefs%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Crect%20width%3D%22800%22%20height%3D%22460%22%20fill%3D%22url(%23bg1)%22%2F%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Ctext%20x%3D%22400%22%20y%3D%2248%22%20font-family%3D%22sans-serif%22%20font-size%3D%2224%22%20font-weight%3D%22bold%22%20fill%3D%22%23881337%22%20text-anchor%3D%22middle%22%3E%E3%83%95%E3%83%A9%E3%83%9F%E3%83%B3%E3%82%B4%E3%81%8C%E3%83%94%E3%83%B3%E3%82%AF%E8%89%B2%E3%81%AB%E3%81%AA%E3%82%8B%E4%BB%95%E7%B5%84%E3%81%BF%3C%2Ftext%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3C!--%20%E3%82%B9%E3%83%86%E3%83%83%E3%83%971%EF%BC%9A%E3%83%92%E3%83%8A%20--%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Crect%20x%3D%2245%22%20y%3D%2285%22%20width%3D%22210%22%20height%3D%22310%22%20rx%3D%2220%22%20fill%3D%22%23FFFFFF%22%20stroke%3D%22%23FECDD3%22%20stroke-width%3D%222%22%2F%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Ccircle%20cx%3D%22150%22%20cy%3D%22195%22%20r%3D%2252%22%20fill%3D%22%23E2E8F0%22%2F%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Ccircle%20cx%3D%22165%22%20cy%3D%22180%22%20r%3D%226%22%20fill%3D%22%231E293B%22%2F%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Cpath%20d%3D%22M195%20190%20Q220%20195%20205%20210%20Z%22%20fill%3D%22%2364748B%22%2F%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Ctext%20x%3D%22150%22%20y%3D%22295%22%20font-family%3D%22sans-serif%22%20font-size%3D%2218%22%20font-weight%3D%22bold%22%20fill%3D%22%23334155%22%20text-anchor%3D%22middle%22%3E%E2%91%A0%20%E3%83%92%E3%83%8A%E3%81%AE%E9%A0%83%3C%2Ftext%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Ctext%20x%3D%22150%22%20y%3D%22325%22%20font-family%3D%22sans-serif%22%20font-size%3D%2214%22%20fill%3D%22%2364748B%22%20text-anchor%3D%22middle%22%3E%E7%94%9F%E3%81%BE%E3%82%8C%E3%81%9F%E3%81%A6%E3%81%AE%E7%BE%BD%E3%81%AF%3C%2Ftext%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Ctext%20x%3D%22150%22%20y%3D%22346%22%20font-family%3D%22sans-serif%22%20font-size%3D%2214%22%20fill%3D%22%2364748B%22%20text-anchor%3D%22middle%22%3E%E3%80%8C%E7%99%BD%E3%80%9C%E7%81%B0%E8%89%B2%E3%80%8D%3C%2Ftext%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3C!--%20%E7%9F%A2%E5%8D%B01%20--%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Cpath%20d%3D%22M268%20235%20L292%20235%22%20stroke%3D%22%23F43F5E%22%20stroke-width%3D%225%22%20stroke-linecap%3D%22round%22%2F%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Cpolygon%20points%3D%22290%2C225%20306%2C235%20290%2C245%22%20fill%3D%22%23F43F5E%22%2F%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3C!--%20%E3%82%B9%E3%83%86%E3%83%83%E3%83%972%EF%BC%9A%E9%A3%9F%E4%BA%8B%20--%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Crect%20x%3D%22310%22%20y%3D%2285%22%20width%3D%22210%22%20height%3D%22310%22%20rx%3D%2220%22%20fill%3D%22%23FFFFFF%22%20stroke%3D%22%23FECDD3%22%20stroke-width%3D%222%22%2F%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Ccircle%20cx%3D%22415%22%20cy%3D%22195%22%20r%3D%2252%22%20fill%3D%22%23FFEDD5%22%2F%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Cpath%20d%3D%22M390%20205%20C390%20175%2C%20440%20175%2C%20435%20205%20C430%20220%2C%20405%20220%2C%20405%20205%22%20fill%3D%22none%22%20stroke%3D%22%23EA580C%22%20stroke-width%3D%228%22%20stroke-linecap%3D%22round%22%2F%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Ccircle%20cx%3D%22430%22%20cy%3D%22190%22%20r%3D%224%22%20fill%3D%22%231E293B%22%2F%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Ctext%20x%3D%22415%22%20y%3D%22295%22%20font-family%3D%22sans-serif%22%20font-size%3D%2218%22%20font-weight%3D%22bold%22%20fill%3D%22%239A3412%22%20text-anchor%3D%22middle%22%3E%E2%91%A1%20%E8%89%B2%E7%B4%A0%E3%82%92%E6%91%82%E5%8F%96%3C%2Ftext%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Ctext%20x%3D%22415%22%20y%3D%22325%22%20font-family%3D%22sans-serif%22%20font-size%3D%2214%22%20fill%3D%22%2364748B%22%20text-anchor%3D%22middle%22%3E%E8%97%BB%E9%A1%9E%E3%82%84%E7%94%B2%E6%AE%BB%E9%A1%9E%E3%81%AE%3C%2Ftext%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Ctext%20x%3D%22415%22%20y%3D%22346%22%20font-family%3D%22sans-serif%22%20font-size%3D%2214%22%20fill%3D%22%2364748B%22%20text-anchor%3D%22middle%22%3E%E3%80%8C%E3%82%AB%E3%83%B3%E3%82%BF%E3%82%AD%E3%82%B5%E3%83%B3%E3%83%81%E3%83%B3%E3%80%8D%3C%2Ftext%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3C!--%20%E7%9F%A2%E5%8D%B02%20--%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Cpath%20d%3D%22M533%20235%20L557%20235%22%20stroke%3D%22%23F43F5E%22%20stroke-width%3D%225%22%20stroke-linecap%3D%22round%22%2F%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Cpolygon%20points%3D%22555%2C225%20571%2C235%20555%2C245%22%20fill%3D%22%23F43F5E%22%2F%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3C!--%20%E3%82%B9%E3%83%86%E3%83%83%E3%83%973%EF%BC%9A%E6%88%90%E9%B3%A5%20--%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Crect%20x%3D%22575%22%20y%3D%2285%22%20width%3D%22180%22%20height%3D%22310%22%20rx%3D%2220%22%20fill%3D%22%23FFFFFF%22%20stroke%3D%22%23FDA4AF%22%20stroke-width%3D%223%22%2F%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Ccircle%20cx%3D%22665%22%20cy%3D%22195%22%20r%3D%2252%22%20fill%3D%22%23FB7185%22%2F%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Ccircle%20cx%3D%22680%22%20cy%3D%22180%22%20r%3D%226%22%20fill%3D%22%231E293B%22%2F%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Cpath%20d%3D%22M710%20190%20Q735%20195%20720%20212%20Z%22%20fill%3D%22%231E293B%22%2F%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Ctext%20x%3D%22665%22%20y%3D%22295%22%20font-family%3D%22sans-serif%22%20font-size%3D%2218%22%20font-weight%3D%22bold%22%20fill%3D%22%23BE123C%22%20text-anchor%3D%22middle%22%3E%E2%91%A2%20%E6%88%90%E9%B3%A5%E3%81%AE%E7%BE%BD%3C%2Ftext%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Ctext%20x%3D%22665%22%20y%3D%22325%22%20font-family%3D%22sans-serif%22%20font-size%3D%2214%22%20fill%3D%22%2364748B%22%20text-anchor%3D%22middle%22%3E%E8%82%9D%E8%87%93%E3%81%A7%E5%88%86%E8%A7%A3%E3%81%95%E3%82%8C%3C%2Ftext%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Ctext%20x%3D%22665%22%20y%3D%22346%22%20font-family%3D%22sans-serif%22%20font-size%3D%2214%22%20font-weight%3D%22bold%22%20fill%3D%22%23E11D48%22%20text-anchor%3D%22middle%22%3E%E9%AE%AE%E3%82%84%E3%81%8B%E3%81%AA%E3%83%94%E3%83%B3%E3%82%AF%E3%81%B8%EF%BC%81%3C%2Ftext%3E%0A%20%20%20%20%20%20%20%20%20%20%3C%2Fsvg%3E" alt="フラミンゴの羽がピンク色なのは食べ物のせい" loading="lazy" class="w-full h-48 sm:h-52 object-cover block">
-                  <div class="absolute bottom-2.5 right-2.5 px-3 py-1.5 rounded-xl bg-slate-900/75 text-white text-xs font-medium backdrop-blur-xs flex items-center gap-1.5 shadow-sm group-hover:bg-amber-600 transition">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path>
-                    </svg>
-                    <span>画面いっぱいに拡大</span>
-                  </div>
-                </div>
-              </div>
-            
-            </div>
-
-            <div class="mt-4 pt-3.5 border-t border-slate-100 flex flex-wrap gap-1.5">
-              
-              <button type="button" data-tag-click="動物" class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium bg-amber-50 text-amber-800 border border-amber-200/70 hover:bg-amber-100 transition">
-                #動物
-              </button>
-              <button type="button" data-tag-click="生き物" class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium bg-amber-50 text-amber-800 border border-amber-200/70 hover:bg-amber-100 transition">
-                #生き物
-              </button>
-              <button type="button" data-tag-click="雑学" class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium bg-amber-50 text-amber-800 border border-amber-200/70 hover:bg-amber-100 transition">
-                #雑学
-              </button>
-            </div>
-          </article><article class="trivia-card p-5 sm:p-6 flex flex-col justify-between">
-            <div>
-              <div class="flex items-center justify-between gap-2 mb-2.5">
-                <span class="text-xs font-bold tracking-wider text-amber-700 bg-amber-100/80 px-2.5 py-0.5 rounded-md">
-                  No.02
-                </span>
-                <span class="text-[11px] font-medium text-slate-500 flex items-center gap-1">🖼️ 図解あり</span>
-              </div>
-
-              <h2 class="font-serif-title text-lg sm:text-xl font-bold text-slate-900 leading-snug mb-3">
-                エッフェル塔は夏になると約15cm背が高くなる
-              </h2>
-
-              <p class="text-sm sm:text-[15px] text-slate-700 leading-relaxed">
-                フランスの象徴であるエッフェル塔は錬鉄（鉄）で造られています。金属には温度が上がると体積が膨張する「熱膨張」という性質があるため、真夏に太陽の熱で鉄骨が温められると、塔全体の高さが冬場よりも最大で約15センチメートル伸びます。
-              </p>
-
-              
-              <div class="mt-4">
-                <div class="trivia-image-wrapper group" role="button" tabindex="0" aria-label="エッフェル塔は夏になると約15cm背が高くなるの画像を全画面で拡大表示" data-open-modal-id="2">
-                  <img src="data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20800%20460%22%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Crect%20width%3D%22800%22%20height%3D%22460%22%20fill%3D%22%23EFF6FF%22%2F%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Ctext%20x%3D%22400%22%20y%3D%2246%22%20font-family%3D%22sans-serif%22%20font-size%3D%2223%22%20font-weight%3D%22bold%22%20fill%3D%22%231E3A8A%22%20text-anchor%3D%22middle%22%3E%E9%87%91%E5%B1%9E%E3%81%AE%E3%80%8C%E7%86%B1%E8%86%A8%E5%BC%B5%E3%80%8D%E3%81%AB%E3%82%88%E3%82%8B%E3%82%A8%E3%83%83%E3%83%95%E3%82%A7%E3%83%AB%E5%A1%94%E3%81%AE%E9%AB%98%E3%81%95%E5%A4%89%E5%8C%96%3C%2Ftext%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3C!--%20%E5%86%AC%E3%81%AE%E5%A1%94%20--%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Crect%20x%3D%2270%22%20y%3D%2275%22%20width%3D%22300%22%20height%3D%22340%22%20rx%3D%2220%22%20fill%3D%22%23FFFFFF%22%20stroke%3D%22%23BFDBFE%22%20stroke-width%3D%222%22%2F%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Ctext%20x%3D%22220%22%20y%3D%22112%22%20font-family%3D%22sans-serif%22%20font-size%3D%2218%22%20font-weight%3D%22bold%22%20fill%3D%22%232563EB%22%20text-anchor%3D%22middle%22%3E%E2%9D%84%EF%B8%8F%20%E5%86%AC%EF%BC%88%E4%BD%8E%E6%B8%A9%E6%99%82%EF%BC%89%3C%2Ftext%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Cpolygon%20points%3D%22220%2C155%20180%2C350%20260%2C350%22%20fill%3D%22none%22%20stroke%3D%22%233B82F6%22%20stroke-width%3D%226%22%2F%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Cline%20x1%3D%22192%22%20y1%3D%22280%22%20x2%3D%22248%22%20y2%3D%22280%22%20stroke%3D%22%233B82F6%22%20stroke-width%3D%225%22%2F%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Cline%20x1%3D%22204%22%20y1%3D%22220%22%20x2%3D%22236%22%20y2%3D%22220%22%20stroke%3D%22%233B82F6%22%20stroke-width%3D%225%22%2F%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Cline%20x1%3D%22150%22%20y1%3D%22155%22%20x2%3D%22290%22%20y2%3D%22155%22%20stroke%3D%22%2393C5FD%22%20stroke-width%3D%222%22%20stroke-dasharray%3D%226%2C4%22%2F%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Ctext%20x%3D%22220%22%20y%3D%22385%22%20font-family%3D%22sans-serif%22%20font-size%3D%2215%22%20fill%3D%22%23475569%22%20text-anchor%3D%22middle%22%3E%E5%9F%BA%E6%BA%96%E3%81%AE%E9%AB%98%E3%81%95%EF%BC%88%E7%B4%84300m%EF%BC%89%3C%2Ftext%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3C!--%20%E5%A4%8F%E3%81%AE%E5%A1%94%20--%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Crect%20x%3D%22430%22%20y%3D%2275%22%20width%3D%22300%22%20height%3D%22340%22%20rx%3D%2220%22%20fill%3D%22%23FFFFFF%22%20stroke%3D%22%23FDBA74%22%20stroke-width%3D%222%22%2F%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Ctext%20x%3D%22580%22%20y%3D%22112%22%20font-family%3D%22sans-serif%22%20font-size%3D%2218%22%20font-weight%3D%22bold%22%20fill%3D%22%23EA580C%22%20text-anchor%3D%22middle%22%3E%E2%98%80%EF%B8%8F%20%E5%A4%8F%EF%BC%88%E9%AB%98%E6%B8%A9%E6%99%82%EF%BC%89%3C%2Ftext%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Ccircle%20cx%3D%22675%22%20cy%3D%22130%22%20r%3D%2222%22%20fill%3D%22%23F97316%22%20opacity%3D%220.85%22%2F%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Cpolygon%20points%3D%22580%2C132%20538%2C350%20622%2C350%22%20fill%3D%22none%22%20stroke%3D%22%23EA580C%22%20stroke-width%3D%226%22%2F%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Cline%20x1%3D%22550%22%20y1%3D%22276%22%20x2%3D%22610%22%20y2%3D%22276%22%20stroke%3D%22%23EA580C%22%20stroke-width%3D%225%22%2F%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Cline%20x1%3D%22563%22%20y1%3D%22212%22%20x2%3D%22597%22%20y2%3D%22212%22%20stroke%3D%22%23EA580C%22%20stroke-width%3D%225%22%2F%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Cline%20x1%3D%22510%22%20y1%3D%22155%22%20x2%3D%22650%22%20y2%3D%22155%22%20stroke%3D%22%2393C5FD%22%20stroke-width%3D%222%22%20stroke-dasharray%3D%226%2C4%22%2F%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Ctext%20x%3D%22645%22%20y%3D%22148%22%20font-family%3D%22sans-serif%22%20font-size%3D%2215%22%20font-weight%3D%22bold%22%20fill%3D%22%23DC2626%22%3E%2B%E7%B4%8415cm!%3C%2Ftext%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Ctext%20x%3D%22580%22%20y%3D%22385%22%20font-family%3D%22sans-serif%22%20font-size%3D%2215%22%20fill%3D%22%23475569%22%20text-anchor%3D%22middle%22%3E%E9%89%84%E9%AA%A8%E3%81%8C%E7%86%B1%E8%86%A8%E5%BC%B5%E3%81%97%E3%81%A6%E4%BC%B8%E3%81%B3%E3%82%8B%3C%2Ftext%3E%0A%20%20%20%20%20%20%20%20%20%20%3C%2Fsvg%3E" alt="エッフェル塔は夏になると約15cm背が高くなる" loading="lazy" class="w-full h-48 sm:h-52 object-cover block">
-                  <div class="absolute bottom-2.5 right-2.5 px-3 py-1.5 rounded-xl bg-slate-900/75 text-white text-xs font-medium backdrop-blur-xs flex items-center gap-1.5 shadow-sm group-hover:bg-amber-600 transition">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path>
-                    </svg>
-                    <span>画面いっぱいに拡大</span>
-                  </div>
-                </div>
-              </div>
-            
-            </div>
-
-            <div class="mt-4 pt-3.5 border-t border-slate-100 flex flex-wrap gap-1.5">
-              
-              <button type="button" data-tag-click="科学" class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium bg-amber-50 text-amber-800 border border-amber-200/70 hover:bg-amber-100 transition">
-                #科学
-              </button>
-              <button type="button" data-tag-click="建築" class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium bg-amber-50 text-amber-800 border border-amber-200/70 hover:bg-amber-100 transition">
-                #建築
-              </button>
-              <button type="button" data-tag-click="世界" class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium bg-amber-50 text-amber-800 border border-amber-200/70 hover:bg-amber-100 transition">
-                #世界
-              </button>
-            </div>
-          </article><article class="trivia-card p-5 sm:p-6 flex flex-col justify-between">
-            <div>
-              <div class="flex items-center justify-between gap-2 mb-2.5">
-                <span class="text-xs font-bold tracking-wider text-amber-700 bg-amber-100/80 px-2.5 py-0.5 rounded-md">
-                  No.03
-                </span>
-                <span class="text-[11px] font-medium text-slate-500 flex items-center gap-1">🖼️ 図解あり</span>
-              </div>
-
-              <h2 class="font-serif-title text-lg sm:text-xl font-bold text-slate-900 leading-snug mb-3">
-                タコには心臓が3つあり、血液は青い
-              </h2>
-
-              <p class="text-sm sm:text-[15px] text-slate-700 leading-relaxed">
-                タコには全身に血液を送る「体心臓」が1つと、左右のエラに血液を送る「鰓（えら）心臓」が2つ、合計3つの心臓があります。さらに、人間の血液は鉄を含むヘモグロビンによって赤色ですが、タコの血液は銅を含む「ヘモシアニン」という色素で酸素を運ぶため青色をしています。
-              </p>
-
-              
-              <div class="mt-4">
-                <div class="trivia-image-wrapper group" role="button" tabindex="0" aria-label="タコには心臓が3つあり、血液は青いの画像を全画面で拡大表示" data-open-modal-id="3">
-                  <img src="data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20800%20460%22%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Crect%20width%3D%22800%22%20height%3D%22460%22%20fill%3D%22%23ECFEFF%22%2F%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Ctext%20x%3D%22400%22%20y%3D%2246%22%20font-family%3D%22sans-serif%22%20font-size%3D%2223%22%20font-weight%3D%22bold%22%20fill%3D%22%23164E63%22%20text-anchor%3D%22middle%22%3E%E3%82%BF%E3%82%B3%E3%81%AE3%E3%81%A4%E3%81%AE%E5%BF%83%E8%87%93%E3%81%A8%E9%9D%92%E3%81%84%E8%A1%80%E6%B6%B2%E3%81%AE%E3%81%B2%E3%81%BF%E3%81%A4%3C%2Ftext%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3C!--%20%E3%82%BF%E3%82%B3%E3%81%AE%E3%82%B7%E3%83%AB%E3%82%A8%E3%83%83%E3%83%88%20--%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Cellipse%20cx%3D%22320%22%20cy%3D%22225%22%20rx%3D%22115%22%20ry%3D%2295%22%20fill%3D%22%23F97316%22%20opacity%3D%220.2%22%20stroke%3D%22%23EA580C%22%20stroke-width%3D%223%22%2F%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3C!--%203%E3%81%A4%E3%81%AE%E5%BF%83%E8%87%93%20--%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Ccircle%20cx%3D%22320%22%20cy%3D%22185%22%20r%3D%2224%22%20fill%3D%22%230284C7%22%2F%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Ctext%20x%3D%22320%22%20y%3D%22190%22%20font-family%3D%22sans-serif%22%20font-size%3D%2212%22%20font-weight%3D%22bold%22%20fill%3D%22%23FFFFFF%22%20text-anchor%3D%22middle%22%3E%E4%BD%93%E5%BF%83%E8%87%93%3C%2Ftext%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Ccircle%20cx%3D%22265%22%20cy%3D%22245%22%20r%3D%2220%22%20fill%3D%22%230EA5E9%22%2F%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Ctext%20x%3D%22265%22%20y%3D%22250%22%20font-family%3D%22sans-serif%22%20font-size%3D%2211%22%20font-weight%3D%22bold%22%20fill%3D%22%23FFFFFF%22%20text-anchor%3D%22middle%22%3E%E9%B0%93%E5%BF%83%E8%87%93%3C%2Ftext%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Ccircle%20cx%3D%22375%22%20cy%3D%22245%22%20r%3D%2220%22%20fill%3D%22%230EA5E9%22%2F%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Ctext%20x%3D%22375%22%20y%3D%22250%22%20font-family%3D%22sans-serif%22%20font-size%3D%2211%22%20font-weight%3D%22bold%22%20fill%3D%22%23FFFFFF%22%20text-anchor%3D%22middle%22%3E%E9%B0%93%E5%BF%83%E8%87%93%3C%2Ftext%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3C!--%20%E8%AA%AC%E6%98%8E%E3%83%91%E3%83%8D%E3%83%AB%20--%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Crect%20x%3D%22475%22%20y%3D%2295%22%20width%3D%22275%22%20height%3D%22125%22%20rx%3D%2216%22%20fill%3D%22%23FFFFFF%22%20stroke%3D%22%23A5F3FC%22%20stroke-width%3D%222%22%2F%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Ctext%20x%3D%22495%22%20y%3D%22130%22%20font-family%3D%22sans-serif%22%20font-size%3D%2217%22%20font-weight%3D%22bold%22%20fill%3D%22%230369A1%22%3E%F0%9F%92%99%20%E5%BF%83%E8%87%93%E3%81%8C%E5%90%88%E8%A8%883%E3%81%A4%3C%2Ftext%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Ctext%20x%3D%22495%22%20y%3D%22158%22%20font-family%3D%22sans-serif%22%20font-size%3D%2213%22%20fill%3D%22%23475569%22%3E%E3%83%BB%E4%BD%93%E5%BF%83%E8%87%93%EF%BC%881%E3%81%A4%EF%BC%89%EF%BC%9A%E5%85%A8%E8%BA%AB%E3%81%B8%E9%80%81%E8%A1%80%3C%2Ftext%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Ctext%20x%3D%22495%22%20y%3D%22182%22%20font-family%3D%22sans-serif%22%20font-size%3D%2213%22%20fill%3D%22%23475569%22%3E%E3%83%BB%E9%B0%93%E5%BF%83%E8%87%93%EF%BC%882%E3%81%A4%EF%BC%89%EF%BC%9A%E5%B7%A6%E5%8F%B3%E3%81%AE%E3%82%A8%E3%83%A9%E3%81%B8%E9%80%81%E8%A1%80%3C%2Ftext%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Crect%20x%3D%22475%22%20y%3D%22240%22%20width%3D%22275%22%20height%3D%22125%22%20rx%3D%2216%22%20fill%3D%22%23FFFFFF%22%20stroke%3D%22%23A5F3FC%22%20stroke-width%3D%222%22%2F%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Ctext%20x%3D%22495%22%20y%3D%22275%22%20font-family%3D%22sans-serif%22%20font-size%3D%2217%22%20font-weight%3D%22bold%22%20fill%3D%22%230369A1%22%3E%F0%9F%A7%AA%20%E8%A1%80%E6%B6%B2%E3%81%8C%E9%9D%92%E3%81%84%E7%90%86%E7%94%B1%3C%2Ftext%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Ctext%20x%3D%22495%22%20y%3D%22303%22%20font-family%3D%22sans-serif%22%20font-size%3D%2213%22%20fill%3D%22%23475569%22%3E%E9%8A%85%E3%82%92%E5%90%AB%E3%82%80%E3%80%8C%E3%83%98%E3%83%A2%E3%82%B7%E3%82%A2%E3%83%8B%E3%83%B3%E3%80%8D%E3%81%8C%3C%2Ftext%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Ctext%20x%3D%22495%22%20y%3D%22327%22%20font-family%3D%22sans-serif%22%20font-size%3D%2213%22%20fill%3D%22%23475569%22%3E%E9%85%B8%E7%B4%A0%E3%81%A8%E7%B5%90%E3%81%B3%E3%81%A4%E3%81%8F%E3%81%A8%E9%9D%92%E8%89%B2%E3%81%AB%E3%81%AA%E3%82%8B%3C%2Ftext%3E%0A%20%20%20%20%20%20%20%20%20%20%3C%2Fsvg%3E" alt="タコには心臓が3つあり、血液は青い" loading="lazy" class="w-full h-48 sm:h-52 object-cover block">
-                  <div class="absolute bottom-2.5 right-2.5 px-3 py-1.5 rounded-xl bg-slate-900/75 text-white text-xs font-medium backdrop-blur-xs flex items-center gap-1.5 shadow-sm group-hover:bg-amber-600 transition">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path>
-                    </svg>
-                    <span>画面いっぱいに拡大</span>
-                  </div>
-                </div>
-              </div>
-            
-            </div>
-
-            <div class="mt-4 pt-3.5 border-t border-slate-100 flex flex-wrap gap-1.5">
-              
-              <button type="button" data-tag-click="動物" class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium bg-amber-50 text-amber-800 border border-amber-200/70 hover:bg-amber-100 transition">
-                #動物
-              </button>
-              <button type="button" data-tag-click="生き物" class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium bg-amber-50 text-amber-800 border border-amber-200/70 hover:bg-amber-100 transition">
-                #生き物
-              </button>
-              <button type="button" data-tag-click="海" class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium bg-amber-50 text-amber-800 border border-amber-200/70 hover:bg-amber-100 transition">
-                #海
-              </button>
-            </div>
-          </article><article class="trivia-card p-5 sm:p-6 flex flex-col justify-between">
-            <div>
-              <div class="flex items-center justify-between gap-2 mb-2.5">
-                <span class="text-xs font-bold tracking-wider text-amber-700 bg-amber-100/80 px-2.5 py-0.5 rounded-md">
-                  No.04
-                </span>
-                <span class="text-[11px] font-medium text-slate-400">📖 読み物</span>
-              </div>
-
-              <h2 class="font-serif-title text-lg sm:text-xl font-bold text-slate-900 leading-snug mb-3">
-                純粋なハチミツは腐らない（賞味期限がない）
-              </h2>
-
-              <p class="text-sm sm:text-[15px] text-slate-700 leading-relaxed">
-                添加物や水分が混ざっていない100%純粋なハチミツは、基本的に腐敗することがありません。糖度が約80%と極めて高く浸透圧で細菌の水分を奪ううえ、ミツバチの酵素によって殺菌作用のある過酸化水素が生成されるためです。実際に古代エジプトのピラミッドから3000年以上前のハチミツが食べられる状態で発見されています。
-              </p>
-
-              
-            </div>
-
-            <div class="mt-4 pt-3.5 border-t border-slate-100 flex flex-wrap gap-1.5">
-              
-              <button type="button" data-tag-click="食べ物" class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium bg-amber-50 text-amber-800 border border-amber-200/70 hover:bg-amber-100 transition">
-                #食べ物
-              </button>
-              <button type="button" data-tag-click="科学" class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium bg-amber-50 text-amber-800 border border-amber-200/70 hover:bg-amber-100 transition">
-                #科学
-              </button>
-              <button type="button" data-tag-click="雑学" class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium bg-amber-50 text-amber-800 border border-amber-200/70 hover:bg-amber-100 transition">
-                #雑学
-              </button>
-            </div>
-          </article><article class="trivia-card p-5 sm:p-6 flex flex-col justify-between">
-            <div>
-              <div class="flex items-center justify-between gap-2 mb-2.5">
-                <span class="text-xs font-bold tracking-wider text-amber-700 bg-amber-100/80 px-2.5 py-0.5 rounded-md">
-                  No.05
-                </span>
-                <span class="text-[11px] font-medium text-slate-400">📖 読み物</span>
-              </div>
-
-              <h2 class="font-serif-title text-lg sm:text-xl font-bold text-slate-900 leading-snug mb-3">
-                宇宙空間では涙を流しても頬を伝って落ちない
-              </h2>
-
-              <p class="text-sm sm:text-[15px] text-slate-700 leading-relaxed">
-                国際宇宙ステーション（ISS）のような微小重力環境では、重力がほとんど働かないため涙が下に流れ落ちません。その代わり、水の表面張力によって目の表面に涙が大きな水滴（レンズ状）となって溜まり続けます。拭うときはタオルで吸い取る必要があります。
-              </p>
-
-              
-            </div>
-
-            <div class="mt-4 pt-3.5 border-t border-slate-100 flex flex-wrap gap-1.5">
-              
-              <button type="button" data-tag-click="宇宙" class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium bg-amber-50 text-amber-800 border border-amber-200/70 hover:bg-amber-100 transition">
-                #宇宙
-              </button>
-              <button type="button" data-tag-click="人体" class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium bg-amber-50 text-amber-800 border border-amber-200/70 hover:bg-amber-100 transition">
-                #人体
-              </button>
-              <button type="button" data-tag-click="科学" class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium bg-amber-50 text-amber-800 border border-amber-200/70 hover:bg-amber-100 transition">
-                #科学
-              </button>
-            </div>
-          </article><article class="trivia-card p-5 sm:p-6 flex flex-col justify-between">
-            <div>
-              <div class="flex items-center justify-between gap-2 mb-2.5">
-                <span class="text-xs font-bold tracking-wider text-amber-700 bg-amber-100/80 px-2.5 py-0.5 rounded-md">
-                  No.06
-                </span>
-                <span class="text-[11px] font-medium text-slate-500 flex items-center gap-1">🖼️ 図解あり</span>
-              </div>
-
-              <h2 class="font-serif-title text-lg sm:text-xl font-bold text-slate-900 leading-snug mb-3">
-                地球と月の距離の間には太陽系の全惑星がすっぽり入る
-              </h2>
-
-              <p class="text-sm sm:text-[15px] text-slate-700 leading-relaxed">
-                地球から月までの平均距離は約38万4,400kmです。一方、太陽系の他の7つの惑星（水星・金星・火星・木星・土星・天王星・海王星）の直径をすべて足し合わせると約38万kmとなり、地球と月の間に全惑星を横一列に並べてもまだ少し隙間が残ります。
-              </p>
-
-              
-              <div class="mt-4">
-                <div class="trivia-image-wrapper group" role="button" tabindex="0" aria-label="地球と月の距離の間には太陽系の全惑星がすっぽり入るの画像を全画面で拡大表示" data-open-modal-id="6">
-                  <img src="data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20800%20460%22%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Crect%20width%3D%22800%22%20height%3D%22460%22%20fill%3D%22%230F172A%22%2F%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Ctext%20x%3D%22400%22%20y%3D%2246%22%20font-family%3D%22sans-serif%22%20font-size%3D%2222%22%20font-weight%3D%22bold%22%20fill%3D%22%23F8FAFC%22%20text-anchor%3D%22middle%22%3E%E5%9C%B0%E7%90%83%E3%81%A8%E6%9C%88%E3%81%AE%E9%96%93%EF%BC%88%E7%B4%8438.4%E4%B8%87km%EF%BC%89%E3%81%AB%E5%A4%AA%E9%99%BD%E7%B3%BB%E3%81%AE%E5%85%A8%E6%83%91%E6%98%9F%E3%81%8C%E4%B8%A6%E3%81%B6%EF%BC%81%3C%2Ftext%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3C!--%20%E5%9C%B0%E7%90%83%20--%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Ccircle%20cx%3D%2265%22%20cy%3D%22235%22%20r%3D%2232%22%20fill%3D%22%233B82F6%22%2F%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Cpath%20d%3D%22M50%20220%20Q65%20210%2075%20230%20T55%20250%20Z%22%20fill%3D%22%2322C55E%22%2F%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Ctext%20x%3D%2265%22%20y%3D%22295%22%20font-family%3D%22sans-serif%22%20font-size%3D%2214%22%20font-weight%3D%22bold%22%20fill%3D%22%2393C5FD%22%20text-anchor%3D%22middle%22%3E%E5%9C%B0%E7%90%83%3C%2Ftext%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3C!--%20%E8%B7%9D%E9%9B%A2%E3%83%A9%E3%82%A4%E3%83%B3%20--%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Cline%20x1%3D%22105%22%20y1%3D%22145%22%20x2%3D%22715%22%20y2%3D%22145%22%20stroke%3D%22%2364748B%22%20stroke-width%3D%222%22%20stroke-dasharray%3D%225%2C5%22%2F%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Ctext%20x%3D%22410%22%20y%3D%22132%22%20font-family%3D%22sans-serif%22%20font-size%3D%2215%22%20font-weight%3D%22bold%22%20fill%3D%22%23FBBF24%22%20text-anchor%3D%22middle%22%3E%E5%B9%B3%E5%9D%87%E8%B7%9D%E9%9B%A2%EF%BC%9A%E7%B4%84%20384%2C400%20km%3C%2Ftext%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3C!--%20%E6%83%91%E6%98%9F%E7%BE%A4%20--%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Ccircle%20cx%3D%22130%22%20cy%3D%22235%22%20r%3D%225%22%20fill%3D%22%2394A3B8%22%2F%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Ccircle%20cx%3D%22152%22%20cy%3D%22235%22%20r%3D%2210%22%20fill%3D%22%23FDE047%22%2F%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Ccircle%20cx%3D%22176%22%20cy%3D%22235%22%20r%3D%227%22%20fill%3D%22%23EF4444%22%2F%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Ccircle%20cx%3D%22268%22%20cy%3D%22235%22%20r%3D%2272%22%20fill%3D%22%23F59E0B%22%2F%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Cellipse%20cx%3D%22415%22%20cy%3D%22235%22%20rx%3D%2275%22%20ry%3D%2216%22%20fill%3D%22none%22%20stroke%3D%22%23FDE68A%22%20stroke-width%3D%225%22%2F%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Ccircle%20cx%3D%22415%22%20cy%3D%22235%22%20r%3D%2258%22%20fill%3D%22%23FBBF24%22%2F%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Ccircle%20cx%3D%22532%22%20cy%3D%22235%22%20r%3D%2230%22%20fill%3D%22%2338BDF8%22%2F%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Ccircle%20cx%3D%22604%22%20cy%3D%22235%22%20r%3D%2229%22%20fill%3D%22%232563EB%22%2F%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Ctext%20x%3D%22410%22%20y%3D%22345%22%20font-family%3D%22sans-serif%22%20font-size%3D%2214%22%20fill%3D%22%23CBD5E1%22%20text-anchor%3D%22middle%22%3E%E6%B0%B4%E6%98%9F%E3%83%BB%E9%87%91%E6%98%9F%E3%83%BB%E7%81%AB%E6%98%9F%E3%83%BB%E6%9C%A8%E6%98%9F%E3%83%BB%E5%9C%9F%E6%98%9F%E3%83%BB%E5%A4%A9%E7%8E%8B%E6%98%9F%E3%83%BB%E6%B5%B7%E7%8E%8B%E6%98%9F%E3%81%AE%E7%9B%B4%E5%BE%84%E5%90%88%E8%A8%88%20%EF%BC%9D%20%E7%B4%84%20380%2C000%20km%3C%2Ftext%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3C!--%20%E6%9C%88%20--%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Ccircle%20cx%3D%22745%22%20cy%3D%22235%22%20r%3D%2214%22%20fill%3D%22%23E2E8F0%22%2F%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Ctext%20x%3D%22745%22%20y%3D%22275%22%20font-family%3D%22sans-serif%22%20font-size%3D%2214%22%20font-weight%3D%22bold%22%20fill%3D%22%23E2E8F0%22%20text-anchor%3D%22middle%22%3E%E6%9C%88%3C%2Ftext%3E%0A%20%20%20%20%20%20%20%20%20%20%3C%2Fsvg%3E" alt="地球と月の距離の間には太陽系の全惑星がすっぽり入る" loading="lazy" class="w-full h-48 sm:h-52 object-cover block">
-                  <div class="absolute bottom-2.5 right-2.5 px-3 py-1.5 rounded-xl bg-slate-900/75 text-white text-xs font-medium backdrop-blur-xs flex items-center gap-1.5 shadow-sm group-hover:bg-amber-600 transition">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path>
-                    </svg>
-                    <span>画面いっぱいに拡大</span>
-                  </div>
-                </div>
-              </div>
-            
-            </div>
-
-            <div class="mt-4 pt-3.5 border-t border-slate-100 flex flex-wrap gap-1.5">
-              
-              <button type="button" data-tag-click="宇宙" class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium bg-amber-50 text-amber-800 border border-amber-200/70 hover:bg-amber-100 transition">
-                #宇宙
-              </button>
-              <button type="button" data-tag-click="雑学" class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium bg-amber-50 text-amber-800 border border-amber-200/70 hover:bg-amber-100 transition">
-                #雑学
-              </button>
-            </div>
-          </article><article class="trivia-card p-5 sm:p-6 flex flex-col justify-between">
-            <div>
-              <div class="flex items-center justify-between gap-2 mb-2.5">
-                <span class="text-xs font-bold tracking-wider text-amber-700 bg-amber-100/80 px-2.5 py-0.5 rounded-md">
-                  No.07
-                </span>
-                <span class="text-[11px] font-medium text-slate-400">📖 読み物</span>
-              </div>
-
-              <h2 class="font-serif-title text-lg sm:text-xl font-bold text-slate-900 leading-snug mb-3">
-                食パンの袋を留めるプラスチックの名称は「バッグ・クロージャー」
-              </h2>
-
-              <p class="text-sm sm:text-[15px] text-slate-700 leading-relaxed">
-                食パンの袋の口を留めている四角いプラスチック製の留め具は「バッグ・クロージャー（Bag Closure）」という正式名称があります。アメリカのクイック・ロック社がリンゴの袋を素早く閉じるために発明したもので、日本では埼玉県川口市の工場で一手に製造されています。
-              </p>
-
-              
-            </div>
-
-            <div class="mt-4 pt-3.5 border-t border-slate-100 flex flex-wrap gap-1.5">
-              
-              <button type="button" data-tag-click="食べ物" class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium bg-amber-50 text-amber-800 border border-amber-200/70 hover:bg-amber-100 transition">
-                #食べ物
-              </button>
-              <button type="button" data-tag-click="日常" class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium bg-amber-50 text-amber-800 border border-amber-200/70 hover:bg-amber-100 transition">
-                #日常
-              </button>
-              <button type="button" data-tag-click="雑学" class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium bg-amber-50 text-amber-800 border border-amber-200/70 hover:bg-amber-100 transition">
-                #雑学
-              </button>
-            </div>
-          </article><article class="trivia-card p-5 sm:p-6 flex flex-col justify-between">
-            <div>
-              <div class="flex items-center justify-between gap-2 mb-2.5">
-                <span class="text-xs font-bold tracking-wider text-amber-700 bg-amber-100/80 px-2.5 py-0.5 rounded-md">
-                  No.08
-                </span>
-                <span class="text-[11px] font-medium text-slate-400">📖 読み物</span>
-              </div>
-
-              <h2 class="font-serif-title text-lg sm:text-xl font-bold text-slate-900 leading-snug mb-3">
-                人間の鼻と耳は一生少しずつ成長し続ける
-              </h2>
-
-              <p class="text-sm sm:text-[15px] text-slate-700 leading-relaxed">
-                人間の骨格の成長は20歳前後で止まりますが、鼻や耳を構成している「軟骨」は年齢とともにコラーゲンやエラスチンが分解されて弾力を失い、重力の影響で少しずつ垂れ下がりながら大きくなります。そのため高齢になると若い頃より鼻や耳が大きく見えるようになります。
-              </p>
-
-              
-            </div>
-
-            <div class="mt-4 pt-3.5 border-t border-slate-100 flex flex-wrap gap-1.5">
-              
-              <button type="button" data-tag-click="人体" class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium bg-amber-50 text-amber-800 border border-amber-200/70 hover:bg-amber-100 transition">
-                #人体
-              </button>
-              <button type="button" data-tag-click="雑学" class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium bg-amber-50 text-amber-800 border border-amber-200/70 hover:bg-amber-100 transition">
-                #雑学
-              </button>
-            </div>
-          </article><article class="trivia-card p-5 sm:p-6 flex flex-col justify-between">
-            <div>
-              <div class="flex items-center justify-between gap-2 mb-2.5">
-                <span class="text-xs font-bold tracking-wider text-amber-700 bg-amber-100/80 px-2.5 py-0.5 rounded-md">
-                  No.09
-                </span>
-                <span class="text-[11px] font-medium text-slate-500 flex items-center gap-1">🖼️ 図解あり</span>
-              </div>
-
-              <h2 class="font-serif-title text-lg sm:text-xl font-bold text-slate-900 leading-snug mb-3">
-                シロクマの毛は白ではなく「透明」で、皮膚は「黒い」
-              </h2>
-
-              <p class="text-sm sm:text-[15px] text-slate-700 leading-relaxed">
-                ホッキョクグマ（シロクマ）の体毛は実は真っ白ではなく、ストローのように中が空洞になった透明な毛です。太陽の光が空洞の中で乱反射することで人間の目には白く見えています。さらに毛の下の皮膚は太陽の熱を効率よく吸収できるよう真っ黒になっています。
-              </p>
-
-              
-              <div class="mt-4">
-                <div class="trivia-image-wrapper group" role="button" tabindex="0" aria-label="シロクマの毛は白ではなく「透明」で、皮膚は「黒い」の画像を全画面で拡大表示" data-open-modal-id="9">
-                  <img src="data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20800%20460%22%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Crect%20width%3D%22800%22%20height%3D%22460%22%20fill%3D%22%23F0F9FF%22%2F%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Ctext%20x%3D%22400%22%20y%3D%2246%22%20font-family%3D%22sans-serif%22%20font-size%3D%2223%22%20font-weight%3D%22bold%22%20fill%3D%22%230C4A6E%22%20text-anchor%3D%22middle%22%3E%E3%82%B7%E3%83%AD%E3%82%AF%E3%83%9E%E3%81%AE%E6%AF%9B%E3%81%A8%E7%9A%AE%E8%86%9A%E3%81%AE%E3%83%80%E3%83%96%E3%83%AB%E9%98%B2%E5%AF%92%E6%A7%8B%E9%80%A0%3C%2Ftext%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3C!--%20%E7%9A%AE%E8%86%9A%EF%BC%88%E9%BB%92%EF%BC%89%20--%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Crect%20x%3D%22110%22%20y%3D%22310%22%20width%3D%22580%22%20height%3D%2275%22%20rx%3D%2216%22%20fill%3D%22%231E293B%22%2F%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Ctext%20x%3D%22400%22%20y%3D%22355%22%20font-family%3D%22sans-serif%22%20font-size%3D%2218%22%20font-weight%3D%22bold%22%20fill%3D%22%23F8FAFC%22%20text-anchor%3D%22middle%22%3E%E2%AC%9B%20%E7%9A%AE%E8%86%9A%E3%81%AF%E3%80%8C%E7%9C%9F%E3%81%A3%E9%BB%92%E3%80%8D%EF%BC%88%E5%A4%AA%E9%99%BD%E3%81%AE%E7%86%B1%E3%82%92%E3%81%97%E3%81%A3%E3%81%8B%E3%82%8A%E5%90%B8%E5%8F%8E%EF%BC%89%3C%2Ftext%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3C!--%20%E9%80%8F%E6%98%8E%E3%81%AA%E6%AF%9B%EF%BC%88%E4%B8%AD%E7%A9%BA%E3%83%81%E3%83%A5%E3%83%BC%E3%83%96%EF%BC%89%20--%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Crect%20x%3D%22210%22%20y%3D%22130%22%20width%3D%2238%22%20height%3D%22185%22%20rx%3D%2218%22%20fill%3D%22%23FFFFFF%22%20stroke%3D%22%2338BDF8%22%20stroke-width%3D%224%22%2F%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Crect%20x%3D%22223%22%20y%3D%22145%22%20width%3D%2212%22%20height%3D%22155%22%20rx%3D%226%22%20fill%3D%22%23E0F2FE%22%2F%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Crect%20x%3D%22380%22%20y%3D%22130%22%20width%3D%2238%22%20height%3D%22185%22%20rx%3D%2218%22%20fill%3D%22%23FFFFFF%22%20stroke%3D%22%2338BDF8%22%20stroke-width%3D%224%22%2F%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Crect%20x%3D%22393%22%20y%3D%22145%22%20width%3D%2212%22%20height%3D%22155%22%20rx%3D%226%22%20fill%3D%22%23E0F2FE%22%2F%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Crect%20x%3D%22550%22%20y%3D%22130%22%20width%3D%2238%22%20height%3D%22185%22%20rx%3D%2218%22%20fill%3D%22%23FFFFFF%22%20stroke%3D%22%2338BDF8%22%20stroke-width%3D%224%22%2F%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Crect%20x%3D%22563%22%20y%3D%22145%22%20width%3D%2212%22%20height%3D%22155%22%20rx%3D%226%22%20fill%3D%22%23E0F2FE%22%2F%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3C!--%20%E5%A4%AA%E9%99%BD%E5%85%89%E7%B7%9A%E3%81%A8%E4%B9%B1%E5%8F%8D%E5%B0%84%20--%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Cpath%20d%3D%22M150%2090%20L215%20160%20L165%20210%22%20fill%3D%22none%22%20stroke%3D%22%23F59E0B%22%20stroke-width%3D%224%22%20stroke-linecap%3D%22round%22%2F%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Cpath%20d%3D%22M475%2090%20L412%20165%20L465%20215%22%20fill%3D%22none%22%20stroke%3D%22%23F59E0B%22%20stroke-width%3D%224%22%20stroke-linecap%3D%22round%22%2F%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Crect%20x%3D%22235%22%20y%3D%2275%22%20width%3D%22330%22%20height%3D%2242%22%20rx%3D%2210%22%20fill%3D%22%23FEF3C7%22%20stroke%3D%22%23F59E0B%22%20stroke-width%3D%222%22%2F%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Ctext%20x%3D%22400%22%20y%3D%22102%22%20font-family%3D%22sans-serif%22%20font-size%3D%2215%22%20font-weight%3D%22bold%22%20fill%3D%22%23B45309%22%20text-anchor%3D%22middle%22%3E%E2%98%80%EF%B8%8F%20%E9%80%8F%E6%98%8E%E3%81%AA%E4%B8%AD%E7%A9%BA%E3%81%AE%E6%AF%9B%E3%81%8C%E5%85%89%E3%82%92%E4%B9%B1%E5%8F%8D%E5%B0%84%E3%81%97%E3%81%A6%E7%99%BD%E3%81%8F%E8%A6%8B%E3%81%88%E3%82%8B%EF%BC%81%3C%2Ftext%3E%0A%20%20%20%20%20%20%20%20%20%20%3C%2Fsvg%3E" alt="シロクマの毛は白ではなく「透明」で、皮膚は「黒い」" loading="lazy" class="w-full h-48 sm:h-52 object-cover block">
-                  <div class="absolute bottom-2.5 right-2.5 px-3 py-1.5 rounded-xl bg-slate-900/75 text-white text-xs font-medium backdrop-blur-xs flex items-center gap-1.5 shadow-sm group-hover:bg-amber-600 transition">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path>
-                    </svg>
-                    <span>画面いっぱいに拡大</span>
-                  </div>
-                </div>
-              </div>
-            
-            </div>
-
-            <div class="mt-4 pt-3.5 border-t border-slate-100 flex flex-wrap gap-1.5">
-              
-              <button type="button" data-tag-click="動物" class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium bg-amber-50 text-amber-800 border border-amber-200/70 hover:bg-amber-100 transition">
-                #動物
-              </button>
-              <button type="button" data-tag-click="生き物" class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium bg-amber-50 text-amber-800 border border-amber-200/70 hover:bg-amber-100 transition">
-                #生き物
-              </button>
-              <button type="button" data-tag-click="科学" class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium bg-amber-50 text-amber-800 border border-amber-200/70 hover:bg-amber-100 transition">
-                #科学
-              </button>
-            </div>
-          </article><article class="trivia-card p-5 sm:p-6 flex flex-col justify-between">
-            <div>
-              <div class="flex items-center justify-between gap-2 mb-2.5">
-                <span class="text-xs font-bold tracking-wider text-amber-700 bg-amber-100/80 px-2.5 py-0.5 rounded-md">
-                  No.10
-                </span>
-                <span class="text-[11px] font-medium text-slate-400">📖 読み物</span>
-              </div>
-
-              <h2 class="font-serif-title text-lg sm:text-xl font-bold text-slate-900 leading-snug mb-3">
-                「鉛筆1本」で約50kmもの長い線を引くことができる
-              </h2>
-
-              <p class="text-sm sm:text-[15px] text-slate-700 leading-relaxed">
-                一般的なHBの黒鉛鉛筆1本（芯の長さ約17.5cm）を使い切るまで一本の線を引き続けると、理論上約50km（東京駅から神奈川県の平塚駅付近まで）の線を引くことができます。文字に換算すると約45,000字を書くことが可能です。
-              </p>
-
-              
-            </div>
-
-            <div class="mt-4 pt-3.5 border-t border-slate-100 flex flex-wrap gap-1.5">
-              
-              <button type="button" data-tag-click="日常" class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium bg-amber-50 text-amber-800 border border-amber-200/70 hover:bg-amber-100 transition">
-                #日常
-              </button>
-              <button type="button" data-tag-click="科学" class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium bg-amber-50 text-amber-800 border border-amber-200/70 hover:bg-amber-100 transition">
-                #科学
-              </button>
-              <button type="button" data-tag-click="雑学" class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium bg-amber-50 text-amber-800 border border-amber-200/70 hover:bg-amber-100 transition">
-                #雑学
-              </button>
-            </div>
-          </article><article class="trivia-card p-5 sm:p-6 flex flex-col justify-between">
-            <div>
-              <div class="flex items-center justify-between gap-2 mb-2.5">
-                <span class="text-xs font-bold tracking-wider text-amber-700 bg-amber-100/80 px-2.5 py-0.5 rounded-md">
-                  No.11
-                </span>
-                <span class="text-[11px] font-medium text-slate-400">📖 読み物</span>
-              </div>
-
-              <h2 class="font-serif-title text-lg sm:text-xl font-bold text-slate-900 leading-snug mb-3">
-                ワニは口を「開ける力」がとても弱い
-              </h2>
-
-              <p class="text-sm sm:text-[15px] text-slate-700 leading-relaxed">
-                ワニが獲物に噛みつく（口を閉じる）力は地球上の生物でもトップクラスで、約1〜2トンもの圧力があります。しかし、口を「開ける」ための筋肉は非常に弱く、人間の手で軽く押さえたり、輪ゴムやガムテープを数周巻くだけで口を開けられなくなります。
-              </p>
-
-              
-            </div>
-
-            <div class="mt-4 pt-3.5 border-t border-slate-100 flex flex-wrap gap-1.5">
-              
-              <button type="button" data-tag-click="動物" class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium bg-amber-50 text-amber-800 border border-amber-200/70 hover:bg-amber-100 transition">
-                #動物
-              </button>
-              <button type="button" data-tag-click="生き物" class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium bg-amber-50 text-amber-800 border border-amber-200/70 hover:bg-amber-100 transition">
-                #生き物
-              </button>
-            </div>
-          </article><article class="trivia-card p-5 sm:p-6 flex flex-col justify-between">
-            <div>
-              <div class="flex items-center justify-between gap-2 mb-2.5">
-                <span class="text-xs font-bold tracking-wider text-amber-700 bg-amber-100/80 px-2.5 py-0.5 rounded-md">
-                  No.12
-                </span>
-                <span class="text-[11px] font-medium text-slate-400">📖 読み物</span>
-              </div>
-
-              <h2 class="font-serif-title text-lg sm:text-xl font-bold text-slate-900 leading-snug mb-3">
-                日本で最初に「ランドセル」を使ったのは学習院の小学生
-              </h2>
-
-              <p class="text-sm sm:text-[15px] text-slate-700 leading-relaxed">
-                ランドセルの語源はオランダ語で背負い鞄を意味する「ランセル（Ransel）」です。幕末に西洋式軍隊の装備として輸入された後、1885年（明治18年）に学習院初等科が「馬車や人力車での通学を禁じ、自分の学用品は自分で背負って通うように」と採用したのが始まりとされています。
-              </p>
-
-              
-            </div>
-
-            <div class="mt-4 pt-3.5 border-t border-slate-100 flex flex-wrap gap-1.5">
-              
-              <button type="button" data-tag-click="歴史" class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium bg-amber-50 text-amber-800 border border-amber-200/70 hover:bg-amber-100 transition">
-                #歴史
-              </button>
-              <button type="button" data-tag-click="日本" class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium bg-amber-50 text-amber-800 border border-amber-200/70 hover:bg-amber-100 transition">
-                #日本
-              </button>
-              <button type="button" data-tag-click="日常" class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium bg-amber-50 text-amber-800 border border-amber-200/70 hover:bg-amber-100 transition">
-                #日常
-              </button>
-            </div>
-          </article></section>
+    <section
+      id="triviaGrid"
+      class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 items-start"
+      aria-live="polite"
+    >
+      <!-- JS (system.js) により豆知識カードを生成 -->
+    </section>
 
     <!-- 検索結果0件時のエンプティステート -->
     <div id="emptyState" class="hidden text-center py-16 px-4 bg-white rounded-3xl border border-slate-200/80 shadow-xs">
       <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center">
         <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
       </div>
       <h2 class="text-base sm:text-lg font-bold text-slate-800 mb-1">一致する豆知識が見つかりませんでした</h2>
       <p class="text-xs sm:text-sm text-slate-500 mb-5">
         別のキーワードやタグ名で検索するか、フィルターをリセットしてみてください。
       </p>
-      <button id="resetAllFiltersBtn" type="button" class="px-5 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-sm font-medium transition shadow-xs">
+      <button
+        id="resetAllFiltersBtn"
+        type="button"
+        class="px-5 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-sm font-medium transition shadow-xs"
+      >
         すべての豆知識を表示する
       </button>
     </div>
   </main>
+
+  <!-- =========================================================
+       フッター
+       ========================================================= -->
   <footer class="border-t border-slate-200/80 bg-white/60 py-5 px-4 text-center text-xs text-slate-500">
     <p>まめちしき辞典 - ChiePedia ｜ スマホ・iPad 11インチ対応</p>
   </footer>
-  <div id="imageModal" class="fullscreen-modal" role="dialog" aria-modal="true" aria-labelledby="modalImageTitle">
+
+  <!-- =========================================================
+       フルスクリーン画像モーダル（画面いっぱいに画像を表示）
+       ========================================================= -->
+  <div
+    id="imageModal"
+    class="fullscreen-modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="modalImageTitle"
+  >
     <!-- モーダル上部コントロールバー -->
     <div class="fixed top-0 inset-x-0 z-20 flex items-center justify-between px-4 sm:px-6 py-3.5 bg-gradient-to-b from-slate-950/90 to-transparent text-white">
       <div class="min-w-0 pr-3">
@@ -542,12 +328,21 @@
         <h3 id="modalImageTitle" class="text-sm sm:text-base font-bold truncate">画像タイトル</h3>
       </div>
       <div class="flex items-center gap-2 shrink-0">
-        <button id="toggleZoomBtn" type="button" class="px-3 py-2 rounded-xl bg-white/15 hover:bg-white/25 text-xs sm:text-sm font-medium text-white backdrop-blur-xs transition">
+        <button
+          id="toggleZoomBtn"
+          type="button"
+          class="px-3 py-2 rounded-xl bg-white/15 hover:bg-white/25 text-xs sm:text-sm font-medium text-white backdrop-blur-xs transition"
+        >
           🔍 拡大切替
         </button>
-        <button id="closeImageModalBtn" type="button" aria-label="モーダルを閉じる" class="w-10 h-10 rounded-xl bg-white/15 hover:bg-white/25 flex items-center justify-center text-white transition">
+        <button
+          id="closeImageModalBtn"
+          type="button"
+          aria-label="モーダルを閉じる"
+          class="w-10 h-10 rounded-xl bg-white/15 hover:bg-white/25 flex items-center justify-center text-white transition"
+        >
           <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
       </div>
@@ -555,7 +350,7 @@
 
     <!-- モーダル中央：画面いっぱいの画像表示領域 -->
     <div id="modalBackdrop" class="modal-image-stage">
-      <img id="modalFullImage" src="" alt="拡大画像">
+      <img id="modalFullImage" src="" alt="拡大画像" />
     </div>
 
     <!-- モーダル下部キャプション -->
@@ -564,8 +359,748 @@
     </div>
   </div>
 
+  <!-- =========================================================
+       4ファイル構成（index.html / style.css / system.js / contents.js）
+       確認＆ワンクリックコピー用モーダル
+       ========================================================= -->
+  <div id="codeExportModal" class="code-modal" role="dialog" aria-modal="true" aria-labelledby="codeModalHeading">
+    <div class="bg-white w-full max-w-3xl rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[88vh]">
+      <div class="px-5 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
+        <div>
+          <h2 id="codeModalHeading" class="text-base sm:text-lg font-bold text-slate-800">4ファイル構成コード出力</h2>
+          <p class="text-xs text-slate-500">ローカル環境で4ファイルに分割して保存する場合にご利用ください</p>
+        </div>
+        <button id="closeCodeModalBtn" type="button" class="p-2 rounded-xl text-slate-500 hover:bg-slate-200/70 transition" aria-label="閉じる">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- ファイル切り替えタブ -->
+      <div class="flex items-center justify-between gap-2 px-4 py-2.5 bg-slate-100 border-b border-slate-200 overflow-x-auto">
+        <div class="flex items-center gap-1.5" id="codeFileTabs">
+          <button type="button" data-file="index.html" class="code-tab-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-amber-600 text-white">index.html</button>
+          <button type="button" data-file="style.css" class="code-tab-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-white text-slate-700 hover:bg-slate-50">style.css</button>
+          <button type="button" data-file="system.js" class="code-tab-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-white text-slate-700 hover:bg-slate-50">system.js</button>
+          <button type="button" data-file="contents.js" class="code-tab-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-white text-slate-700 hover:bg-slate-50">contents.js</button>
+        </div>
+        <button id="copyCodeBtn" type="button" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-white hover:bg-slate-700 transition shrink-0">
+          📋 コードをコピー
+        </button>
+      </div>
+
+      <!-- コード表示領域 -->
+      <div class="p-4 overflow-auto bg-slate-900 text-slate-100 text-xs font-mono leading-relaxed flex-1">
+        <pre id="codeViewerPre" class="whitespace-pre-wrap break-all"></pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================
+       [contents.js 相当] 豆知識データ定義ファイル
+       ※ 外部画像リンク切れを防ぐため、高精細なインラインSVGデータURIを使用
+       ========================================================= -->
+  <script id="app-contents-js">
+    /**
+     * SVG文字列を安全なData URIに変換するヘルパー関数
+     */
+    function createSvgDataUri(svgContent) {
+      return "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svgContent.trim());
+    }
+
+    /**
+     * 豆知識データベース（contents.js）
+     * id: 一意のID
+     * title: 豆知識名
+     * tags: 検索・絞り込み用タグ配列
+     * content: 豆知識の解説本文
+     * image: 添付画像URL（nullの場合はテキストのみの豆知識）
+     * imageCaption: モーダル拡大表示時の解説キャプション
+     */
+    const TRIVIA_CONTENTS = [
+      {
+        id: 1,
+        title: "フラミンゴの羽がピンク色なのは食べ物のせい",
+        tags: ["動物", "生き物", "雑学"],
+        content: "フラミンゴは生まれたときは白色や灰色の羽をしています。主食である藍藻類（スピルリナなど）や甲殻類に含まれる赤色色素「カンタキサンチン」を体内で分解・吸収することで、羽が鮮やかなピンク色へと変化します。動物園では色を保つために色素を含む専用エサを与えています。",
+        image: createSvgDataUri(`
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 460">
+            <defs>
+              <linearGradient id="bg1" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#FFF1F2"/>
+                <stop offset="100%" stop-color="#FFE4E6"/>
+              </linearGradient>
+            </defs>
+            <rect width="800" height="460" fill="url(#bg1)"/>
+            <text x="400" y="48" font-family="sans-serif" font-size="24" font-weight="bold" fill="#881337" text-anchor="middle">フラミンゴがピンク色になる仕組み</text>
+            <!-- ステップ1：ヒナ -->
+            <rect x="45" y="85" width="210" height="310" rx="20" fill="#FFFFFF" stroke="#FECDD3" stroke-width="2"/>
+            <circle cx="150" cy="195" r="52" fill="#E2E8F0"/>
+            <circle cx="165" cy="180" r="6" fill="#1E293B"/>
+            <path d="M195 190 Q220 195 205 210 Z" fill="#64748B"/>
+            <text x="150" y="295" font-family="sans-serif" font-size="18" font-weight="bold" fill="#334155" text-anchor="middle">① ヒナの頃</text>
+            <text x="150" y="325" font-family="sans-serif" font-size="14" fill="#64748B" text-anchor="middle">生まれたての羽は</text>
+            <text x="150" y="346" font-family="sans-serif" font-size="14" fill="#64748B" text-anchor="middle">「白〜灰色」</text>
+            <!-- 矢印1 -->
+            <path d="M268 235 L292 235" stroke="#F43F5E" stroke-width="5" stroke-linecap="round"/>
+            <polygon points="290,225 306,235 290,245" fill="#F43F5E"/>
+            <!-- ステップ2：食事 -->
+            <rect x="310" y="85" width="210" height="310" rx="20" fill="#FFFFFF" stroke="#FECDD3" stroke-width="2"/>
+            <circle cx="415" cy="195" r="52" fill="#FFEDD5"/>
+            <path d="M390 205 C390 175, 440 175, 435 205 C430 220, 405 220, 405 205" fill="none" stroke="#EA580C" stroke-width="8" stroke-linecap="round"/>
+            <circle cx="430" cy="190" r="4" fill="#1E293B"/>
+            <text x="415" y="295" font-family="sans-serif" font-size="18" font-weight="bold" fill="#9A3412" text-anchor="middle">② 色素を摂取</text>
+            <text x="415" y="325" font-family="sans-serif" font-size="14" fill="#64748B" text-anchor="middle">藻類や甲殻類の</text>
+            <text x="415" y="346" font-family="sans-serif" font-size="14" fill="#64748B" text-anchor="middle">「カンタキサンチン」</text>
+            <!-- 矢印2 -->
+            <path d="M533 235 L557 235" stroke="#F43F5E" stroke-width="5" stroke-linecap="round"/>
+            <polygon points="555,225 571,235 555,245" fill="#F43F5E"/>
+            <!-- ステップ3：成鳥 -->
+            <rect x="575" y="85" width="180" height="310" rx="20" fill="#FFFFFF" stroke="#FDA4AF" stroke-width="3"/>
+            <circle cx="665" cy="195" r="52" fill="#FB7185"/>
+            <circle cx="680" cy="180" r="6" fill="#1E293B"/>
+            <path d="M710 190 Q735 195 720 212 Z" fill="#1E293B"/>
+            <text x="665" y="295" font-family="sans-serif" font-size="18" font-weight="bold" fill="#BE123C" text-anchor="middle">③ 成鳥の羽</text>
+            <text x="665" y="325" font-family="sans-serif" font-size="14" fill="#64748B" text-anchor="middle">肝臓で分解され</text>
+            <text x="665" y="346" font-family="sans-serif" font-size="14" font-weight="bold" fill="#E11D48" text-anchor="middle">鮮やかなピンクへ！</text>
+          </svg>
+        `),
+        imageCaption: "フラミンゴのヒナ（灰色）が藻類や甲殻類の色素を摂取してピンク色の成鳥になるプロセス図解"
+      },
+      {
+        id: 2,
+        title: "エッフェル塔は夏になると約15cm背が高くなる",
+        tags: ["科学", "建築", "世界"],
+        content: "フランスの象徴であるエッフェル塔は錬鉄（鉄）で造られています。金属には温度が上がると体積が膨張する「熱膨張」という性質があるため、真夏に太陽の熱で鉄骨が温められると、塔全体の高さが冬場よりも最大で約15センチメートル伸びます。",
+        image: createSvgDataUri(`
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 460">
+            <rect width="800" height="460" fill="#EFF6FF"/>
+            <text x="400" y="46" font-family="sans-serif" font-size="23" font-weight="bold" fill="#1E3A8A" text-anchor="middle">金属の「熱膨張」によるエッフェル塔の高さ変化</text>
+            <!-- 冬の塔 -->
+            <rect x="70" y="75" width="300" height="340" rx="20" fill="#FFFFFF" stroke="#BFDBFE" stroke-width="2"/>
+            <text x="220" y="112" font-family="sans-serif" font-size="18" font-weight="bold" fill="#2563EB" text-anchor="middle">❄️ 冬（低温時）</text>
+            <polygon points="220,155 180,350 260,350" fill="none" stroke="#3B82F6" stroke-width="6"/>
+            <line x1="192" y1="280" x2="248" y2="280" stroke="#3B82F6" stroke-width="5"/>
+            <line x1="204" y1="220" x2="236" y2="220" stroke="#3B82F6" stroke-width="5"/>
+            <line x1="150" y1="155" x2="290" y2="155" stroke="#93C5FD" stroke-width="2" stroke-dasharray="6,4"/>
+            <text x="220" y="385" font-family="sans-serif" font-size="15" fill="#475569" text-anchor="middle">基準の高さ（約300m）</text>
+            <!-- 夏の塔 -->
+            <rect x="430" y="75" width="300" height="340" rx="20" fill="#FFFFFF" stroke="#FDBA74" stroke-width="2"/>
+            <text x="580" y="112" font-family="sans-serif" font-size="18" font-weight="bold" fill="#EA580C" text-anchor="middle">☀️ 夏（高温時）</text>
+            <circle cx="675" cy="130" r="22" fill="#F97316" opacity="0.85"/>
+            <polygon points="580,132 538,350 622,350" fill="none" stroke="#EA580C" stroke-width="6"/>
+            <line x1="550" y1="276" x2="610" y2="276" stroke="#EA580C" stroke-width="5"/>
+            <line x1="563" y1="212" x2="597" y2="212" stroke="#EA580C" stroke-width="5"/>
+            <line x1="510" y1="155" x2="650" y2="155" stroke="#93C5FD" stroke-width="2" stroke-dasharray="6,4"/>
+            <text x="645" y="148" font-family="sans-serif" font-size="15" font-weight="bold" fill="#DC2626">+約15cm!</text>
+            <text x="580" y="385" font-family="sans-serif" font-size="15" fill="#475569" text-anchor="middle">鉄骨が熱膨張して伸びる</text>
+          </svg>
+        `),
+        imageCaption: "夏の日差しで鉄骨が熱膨張し、冬の基準高さより約15cm高くなるイメージ図"
+      },
+      {
+        id: 3,
+        title: "タコには心臓が3つあり、血液は青い",
+        tags: ["動物", "生き物", "海"],
+        content: "タコには全身に血液を送る「体心臓」が1つと、左右のエラに血液を送る「鰓（えら）心臓」が2つ、合計3つの心臓があります。さらに、人間の血液は鉄を含むヘモグロビンによって赤色ですが、タコの血液は銅を含む「ヘモシアニン」という色素で酸素を運ぶため青色をしています。",
+        image: createSvgDataUri(`
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 460">
+            <rect width="800" height="460" fill="#ECFEFF"/>
+            <text x="400" y="46" font-family="sans-serif" font-size="23" font-weight="bold" fill="#164E63" text-anchor="middle">タコの3つの心臓と青い血液のひみつ</text>
+            <!-- タコのシルエット -->
+            <ellipse cx="320" cy="225" rx="115" ry="95" fill="#F97316" opacity="0.2" stroke="#EA580C" stroke-width="3"/>
+            <!-- 3つの心臓 -->
+            <circle cx="320" cy="185" r="24" fill="#0284C7"/>
+            <text x="320" y="190" font-family="sans-serif" font-size="12" font-weight="bold" fill="#FFFFFF" text-anchor="middle">体心臓</text>
+            <circle cx="265" cy="245" r="20" fill="#0EA5E9"/>
+            <text x="265" y="250" font-family="sans-serif" font-size="11" font-weight="bold" fill="#FFFFFF" text-anchor="middle">鰓心臓</text>
+            <circle cx="375" cy="245" r="20" fill="#0EA5E9"/>
+            <text x="375" y="250" font-family="sans-serif" font-size="11" font-weight="bold" fill="#FFFFFF" text-anchor="middle">鰓心臓</text>
+            <!-- 説明パネル -->
+            <rect x="475" y="95" width="275" height="125" rx="16" fill="#FFFFFF" stroke="#A5F3FC" stroke-width="2"/>
+            <text x="495" y="130" font-family="sans-serif" font-size="17" font-weight="bold" fill="#0369A1">💙 心臓が合計3つ</text>
+            <text x="495" y="158" font-family="sans-serif" font-size="13" fill="#475569">・体心臓（1つ）：全身へ送血</text>
+            <text x="495" y="182" font-family="sans-serif" font-size="13" fill="#475569">・鰓心臓（2つ）：左右のエラへ送血</text>
+            <rect x="475" y="240" width="275" height="125" rx="16" fill="#FFFFFF" stroke="#A5F3FC" stroke-width="2"/>
+            <text x="495" y="275" font-family="sans-serif" font-size="17" font-weight="bold" fill="#0369A1">🧪 血液が青い理由</text>
+            <text x="495" y="303" font-family="sans-serif" font-size="13" fill="#475569">銅を含む「ヘモシアニン」が</text>
+            <text x="495" y="327" font-family="sans-serif" font-size="13" fill="#475569">酸素と結びつくと青色になる</text>
+          </svg>
+        `),
+        imageCaption: "タコの体心臓（1個）＋鰓心臓（2個）の配置と、ヘモシアニンによる青い血液の解説"
+      },
+      {
+        id: 4,
+        title: "純粋なハチミツは腐らない（賞味期限がない）",
+        tags: ["食べ物", "科学", "雑学"],
+        content: "添加物や水分が混ざっていない100%純粋なハチミツは、基本的に腐敗することがありません。糖度が約80%と極めて高く浸透圧で細菌の水分を奪ううえ、ミツバチの酵素によって殺菌作用のある過酸化水素が生成されるためです。実際に古代エジプトのピラミッドから3000年以上前のハチミツが食べられる状態で発見されています。",
+        image: null,
+        imageCaption: ""
+      },
+      {
+        id: 5,
+        title: "宇宙空間では涙を流しても頬を伝って落ちない",
+        tags: ["宇宙", "人体", "科学"],
+        content: "国際宇宙ステーション（ISS）のような微小重力環境では、重力がほとんど働かないため涙が下に流れ落ちません。その代わり、水の表面張力によって目の表面に涙が大きな水滴（レンズ状）となって溜まり続けます。拭うときはタオルで吸い取る必要があります。",
+        image: null,
+        imageCaption: ""
+      },
+      {
+        id: 6,
+        title: "地球と月の距離の間には太陽系の全惑星がすっぽり入る",
+        tags: ["宇宙", "雑学"],
+        content: "地球から月までの平均距離は約38万4,400kmです。一方、太陽系の他の7つの惑星（水星・金星・火星・木星・土星・天王星・海王星）の直径をすべて足し合わせると約38万kmとなり、地球と月の間に全惑星を横一列に並べてもまだ少し隙間が残ります。",
+        image: createSvgDataUri(`
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 460">
+            <rect width="800" height="460" fill="#0F172A"/>
+            <text x="400" y="46" font-family="sans-serif" font-size="22" font-weight="bold" fill="#F8FAFC" text-anchor="middle">地球と月の間（約38.4万km）に太陽系の全惑星が並ぶ！</text>
+            <!-- 地球 -->
+            <circle cx="65" cy="235" r="32" fill="#3B82F6"/>
+            <path d="M50 220 Q65 210 75 230 T55 250 Z" fill="#22C55E"/>
+            <text x="65" y="295" font-family="sans-serif" font-size="14" font-weight="bold" fill="#93C5FD" text-anchor="middle">地球</text>
+            <!-- 距離ライン -->
+            <line x1="105" y1="145" x2="715" y2="145" stroke="#64748B" stroke-width="2" stroke-dasharray="5,5"/>
+            <text x="410" y="132" font-family="sans-serif" font-size="15" font-weight="bold" fill="#FBBF24" text-anchor="middle">平均距離：約 384,400 km</text>
+            <!-- 惑星群 -->
+            <circle cx="130" cy="235" r="5" fill="#94A3B8"/>
+            <circle cx="152" cy="235" r="10" fill="#FDE047"/>
+            <circle cx="176" cy="235" r="7" fill="#EF4444"/>
+            <circle cx="268" cy="235" r="72" fill="#F59E0B"/>
+            <ellipse cx="415" cy="235" rx="75" ry="16" fill="none" stroke="#FDE68A" stroke-width="5"/>
+            <circle cx="415" cy="235" r="58" fill="#FBBF24"/>
+            <circle cx="532" cy="235" r="30" fill="#38BDF8"/>
+            <circle cx="604" cy="235" r="29" fill="#2563EB"/>
+            <text x="410" y="345" font-family="sans-serif" font-size="14" fill="#CBD5E1" text-anchor="middle">水星・金星・火星・木星・土星・天王星・海王星の直径合計 ＝ 約 380,000 km</text>
+            <!-- 月 -->
+            <circle cx="745" cy="235" r="14" fill="#E2E8F0"/>
+            <text x="745" y="275" font-family="sans-serif" font-size="14" font-weight="bold" fill="#E2E8F0" text-anchor="middle">月</text>
+          </svg>
+        `),
+        imageCaption: "地球と月の平均距離384,400kmの間に太陽系7惑星を並べたスケール比較図"
+      },
+      {
+        id: 7,
+        title: "食パンの袋を留めるプラスチックの名称は「バッグ・クロージャー」",
+        tags: ["食べ物", "日常", "雑学"],
+        content: "食パンの袋の口を留めている四角いプラスチック製の留め具は「バッグ・クロージャー（Bag Closure）」という正式名称があります。アメリカのクイック・ロック社がリンゴの袋を素早く閉じるために発明したもので、日本では埼玉県川口市の工場で一手に製造されています。",
+        image: null,
+        imageCaption: ""
+      },
+      {
+        id: 8,
+        title: "人間の鼻と耳は一生少しずつ成長し続ける",
+        tags: ["人体", "雑学"],
+        content: "人間の骨格の成長は20歳前後で止まりますが、鼻や耳を構成している「軟骨」は年齢とともにコラーゲンやエラスチンが分解されて弾力を失い、重力の影響で少しずつ垂れ下がりながら大きくなります。そのため高齢になると若い頃より鼻や耳が大きく見えるようになります。",
+        image: null,
+        imageCaption: ""
+      },
+      {
+        id: 9,
+        title: "シロクマの毛は白ではなく「透明」で、皮膚は「黒い」",
+        tags: ["動物", "生き物", "科学"],
+        content: "ホッキョクグマ（シロクマ）の体毛は実は真っ白ではなく、ストローのように中が空洞になった透明な毛です。太陽の光が空洞の中で乱反射することで人間の目には白く見えています。さらに毛の下の皮膚は太陽の熱を効率よく吸収できるよう真っ黒になっています。",
+        image: createSvgDataUri(`
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 460">
+            <rect width="800" height="460" fill="#F0F9FF"/>
+            <text x="400" y="46" font-family="sans-serif" font-size="23" font-weight="bold" fill="#0C4A6E" text-anchor="middle">シロクマの毛と皮膚のダブル防寒構造</text>
+            <!-- 皮膚（黒） -->
+            <rect x="110" y="310" width="580" height="75" rx="16" fill="#1E293B"/>
+            <text x="400" y="355" font-family="sans-serif" font-size="18" font-weight="bold" fill="#F8FAFC" text-anchor="middle">⬛ 皮膚は「真っ黒」（太陽の熱をしっかり吸収）</text>
+            <!-- 透明な毛（中空チューブ） -->
+            <rect x="210" y="130" width="38" height="185" rx="18" fill="#FFFFFF" stroke="#38BDF8" stroke-width="4"/>
+            <rect x="223" y="145" width="12" height="155" rx="6" fill="#E0F2FE"/>
+            <rect x="380" y="130" width="38" height="185" rx="18" fill="#FFFFFF" stroke="#38BDF8" stroke-width="4"/>
+            <rect x="393" y="145" width="12" height="155" rx="6" fill="#E0F2FE"/>
+            <rect x="550" y="130" width="38" height="185" rx="18" fill="#FFFFFF" stroke="#38BDF8" stroke-width="4"/>
+            <rect x="563" y="145" width="12" height="155" rx="6" fill="#E0F2FE"/>
+            <!-- 太陽光線と乱反射 -->
+            <path d="M150 90 L215 160 L165 210" fill="none" stroke="#F59E0B" stroke-width="4" stroke-linecap="round"/>
+            <path d="M475 90 L412 165 L465 215" fill="none" stroke="#F59E0B" stroke-width="4" stroke-linecap="round"/>
+            <rect x="235" y="75" width="330" height="42" rx="10" fill="#FEF3C7" stroke="#F59E0B" stroke-width="2"/>
+            <text x="400" y="102" font-family="sans-serif" font-size="15" font-weight="bold" fill="#B45309" text-anchor="middle">☀️ 透明な中空の毛が光を乱反射して白く見える！</text>
+          </svg>
+        `),
+        imageCaption: "シロクマの透明なストロー状の体毛による光の乱反射と、熱を吸収する黒い皮膚の断面イメージ"
+      },
+      {
+        id: 10,
+        title: "「鉛筆1本」で約50kmもの長い線を引くことができる",
+        tags: ["日常", "科学", "雑学"],
+        content: "一般的なHBの黒鉛鉛筆1本（芯の長さ約17.5cm）を使い切るまで一本の線を引き続けると、理論上約50km（東京駅から神奈川県の平塚駅付近まで）の線を引くことができます。文字に換算すると約45,000字を書くことが可能です。",
+        image: null,
+        imageCaption: ""
+      },
+      {
+        id: 11,
+        title: "ワニは口を「開ける力」がとても弱い",
+        tags: ["動物", "生き物"],
+        content: "ワニが獲物に噛みつく（口を閉じる）力は地球上の生物でもトップクラスで、約1〜2トンもの圧力があります。しかし、口を「開ける」ための筋肉は非常に弱く、人間の手で軽く押さえたり、輪ゴムやガムテープを数周巻くだけで口を開けられなくなります。",
+        image: null,
+        imageCaption: ""
+      },
+      {
+        id: 12,
+        title: "日本で最初に「ランドセル」を使ったのは学習院の小学生",
+        tags: ["歴史", "日本", "日常"],
+        content: "ランドセルの語源はオランダ語で背負い鞄を意味する「ランセル（Ransel）」です。幕末に西洋式軍隊の装備として輸入された後、1885年（明治18年）に学習院初等科が「馬車や人力車での通学を禁じ、自分の学用品は自分で背負って通うように」と採用したのが始まりとされています。",
+        image: null,
+        imageCaption: ""
+      }
+    ];
+  </script>
+
+  <!-- =========================================================
+       [system.js 相当] アプリ全体の動作制御・検索・モーダル制御
+       ========================================================= -->
+  <script id="app-system-js">
+    document.addEventListener("DOMContentLoaded", () => {
+      // アプリの状態管理
+      const state = {
+        searchQuery: "",
+        selectedTag: "すべて",
+        onlyWithImage: false,
+        isImageZoomed: false,
+        activeCodeTab: "index.html"
+      };
+
+      // DOM要素の取得
+      const searchInput = document.getElementById("searchInput");
+      const clearSearchBtn = document.getElementById("clearSearchBtn");
+      const tagFilterContainer = document.getElementById("tagFilterContainer");
+      const onlyWithImageCheckbox = document.getElementById("onlyWithImageCheckbox");
+      const resultCountText = document.getElementById("resultCountText");
+      const triviaGrid = document.getElementById("triviaGrid");
+      const emptyState = document.getElementById("emptyState");
+      const resetAllFiltersBtn = document.getElementById("resetAllFiltersBtn");
+
+      // 画像フルスクリーンモーダル要素
+      const imageModal = document.getElementById("imageModal");
+      const modalBackdrop = document.getElementById("modalBackdrop");
+      const modalFullImage = document.getElementById("modalFullImage");
+      const modalImageTitle = document.getElementById("modalImageTitle");
+      const modalImageCaption = document.getElementById("modalImageCaption");
+      const closeImageModalBtn = document.getElementById("closeImageModalBtn");
+      const toggleZoomBtn = document.getElementById("toggleZoomBtn");
+
+      // 4ファイル構成モーダル要素
+      const openCodeModalBtn = document.getElementById("openCodeModalBtn");
+      const codeExportModal = document.getElementById("codeExportModal");
+      const closeCodeModalBtn = document.getElementById("closeCodeModalBtn");
+      const codeFileTabs = document.getElementById("codeFileTabs");
+      const codeViewerPre = document.getElementById("codeViewerPre");
+      const copyCodeBtn = document.getElementById("copyCodeBtn");
+
+      /**
+       * カタカナをひらがなへ正規化・小文字化して検索しやすくする
+       */
+      function normalizeText(str) {
+        if (!str) return "";
+        return str
+          .toLowerCase()
+          .trim()
+          .replace(/[\u30a1-\u30f6]/g, (match) =>
+            String.fromCharCode(match.charCodeAt(0) - 0x60)
+          );
+      }
+
+      /**
+       * 全データから重複なしのタグ一覧を抽出し、タグボタンを描画
+       */
+      function renderTagPills() {
+        const tagCounts = new Map();
+        TRIVIA_CONTENTS.forEach((item) => {
+          item.tags.forEach((tag) => {
+            tagCounts.set(tag, (tagCounts.get(tag) || 0) + 1);
+          });
+        });
+
+        const allTags = ["すべて", ...Array.from(tagCounts.keys())];
+        tagFilterContainer.innerHTML = "";
+
+        allTags.forEach((tag) => {
+          const isSelected = state.selectedTag === tag;
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.setAttribute("role", "tab");
+          btn.setAttribute("aria-selected", String(isSelected));
+          btn.className = isSelected
+            ? "shrink-0 px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-semibold bg-amber-600 text-white shadow-xs transition"
+            : "shrink-0 px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-medium bg-white text-slate-600 border border-slate-200 hover:bg-amber-50 hover:text-amber-800 hover:border-amber-200 transition";
+
+          const count = tag === "すべて" ? TRIVIA_CONTENTS.length : tagCounts.get(tag);
+          btn.textContent = tag === "すべて" ? `すべて (${count})` : `#${tag} (${count})`;
+
+          btn.addEventListener("click", () => {
+            state.selectedTag = tag;
+            renderTagPills();
+            renderTriviaList();
+          });
+
+          tagFilterContainer.appendChild(btn);
+        });
+      }
+
+      /**
+       * 検索条件・選択タグ・画像有無フィルターに基づいて豆知識一覧を抽出・描画
+       */
+      function renderTriviaList() {
+        const rawQuery = state.searchQuery.trim();
+        // 先頭の「#」を取り除いて検索できるように対応
+        const cleanQuery = normalizeText(rawQuery.replace(/^[#＃]+/, ""));
+
+        const filtered = TRIVIA_CONTENTS.filter((item) => {
+          // 1. タグピル絞り込み
+          if (state.selectedTag !== "すべて" && !item.tags.includes(state.selectedTag)) {
+            return false;
+          }
+
+          // 2. 画像付きのみフィルター
+          if (state.onlyWithImage && !item.image) {
+            return false;
+          }
+
+          // 3. キーワード検索（豆知識名に含む OR 付随タグ名に含む）
+          if (cleanQuery.length > 0) {
+            const normTitle = normalizeText(item.title);
+            const titleMatch = normTitle.includes(cleanQuery);
+            const tagMatch = item.tags.some((t) => normalizeText(t).includes(cleanQuery));
+            return titleMatch || tagMatch;
+          }
+
+          return true;
+        });
+
+        // 件数表示の更新
+        resultCountText.textContent =
+          filtered.length === TRIVIA_CONTENTS.length
+            ? `全 ${filtered.length} 件の豆知識を表示中`
+            : `該当 ${filtered.length} 件 / 全 ${TRIVIA_CONTENTS.length} 件`;
+
+        // クリアボタンの表示切り替え
+        if (rawQuery.length > 0) {
+          clearSearchBtn.classList.remove("hidden");
+        } else {
+          clearSearchBtn.classList.add("hidden");
+        }
+
+        // 0件表示の制御
+        if (filtered.length === 0) {
+          triviaGrid.innerHTML = "";
+          emptyState.classList.remove("hidden");
+          return;
+        }
+        emptyState.classList.add("hidden");
+
+        // カードDOMの構築
+        triviaGrid.innerHTML = "";
+        filtered.forEach((item) => {
+          const card = document.createElement("article");
+          card.className = "trivia-card p-5 sm:p-6 flex flex-col justify-between";
+
+          // タグHTMLの生成（タグクリックでも検索絞り込み可能）
+          const tagsHtml = item.tags
+            .map(
+              (tag) => `
+              <button
+                type="button"
+                data-tag-click="${escapeHtml(tag)}"
+                class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium bg-amber-50 text-amber-800 border border-amber-200/70 hover:bg-amber-100 transition"
+              >
+                #${escapeHtml(tag)}
+              </button>`
+            )
+            .join("");
+
+          // 画像セクションHTML（画像がある豆知識のみ表示）
+          const imageSectionHtml = item.image
+            ? `
+              <div class="mt-4">
+                <div
+                  class="trivia-image-wrapper group"
+                  role="button"
+                  tabindex="0"
+                  aria-label="${escapeHtml(item.title)}の画像を全画面で拡大表示"
+                  data-open-modal-id="${item.id}"
+                >
+                  <img
+                    src="${item.image}"
+                    alt="${escapeHtml(item.title)}"
+                    loading="lazy"
+                    class="w-full h-48 sm:h-52 object-cover block"
+                  />
+                  <div class="absolute bottom-2.5 right-2.5 px-3 py-1.5 rounded-xl bg-slate-900/75 text-white text-xs font-medium backdrop-blur-xs flex items-center gap-1.5 shadow-sm group-hover:bg-amber-600 transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+                    </svg>
+                    <span>画面いっぱいに拡大</span>
+                  </div>
+                </div>
+              </div>
+            `
+            : "";
+
+          card.innerHTML = `
+            <div>
+              <div class="flex items-center justify-between gap-2 mb-2.5">
+                <span class="text-xs font-bold tracking-wider text-amber-700 bg-amber-100/80 px-2.5 py-0.5 rounded-md">
+                  No.${String(item.id).padStart(2, "0")}
+                </span>
+                ${
+                  item.image
+                    ? '<span class="text-[11px] font-medium text-slate-500 flex items-center gap-1">🖼️ 図解あり</span>'
+                    : '<span class="text-[11px] font-medium text-slate-400">📖 読み物</span>'
+                }
+              </div>
+
+              <h2 class="font-serif-title text-lg sm:text-xl font-bold text-slate-900 leading-snug mb-3">
+                ${escapeHtml(item.title)}
+              </h2>
+
+              <p class="text-sm sm:text-[15px] text-slate-700 leading-relaxed">
+                ${escapeHtml(item.content)}
+              </p>
+
+              ${imageSectionHtml}
+            </div>
+
+            <div class="mt-4 pt-3.5 border-t border-slate-100 flex flex-wrap gap-1.5">
+              ${tagsHtml}
+            </div>
+          `;
+
+          // カード内タグボタンのクリックイベント
+          card.querySelectorAll("[data-tag-click]").forEach((tagBtn) => {
+            tagBtn.addEventListener("click", () => {
+              const clickedTag = tagBtn.getAttribute("data-tag-click");
+              state.selectedTag = clickedTag;
+              renderTagPills();
+              renderTriviaList();
+              window.scrollTo({ top: 0, behavior: "smooth" });
+            });
+          });
+
+          // カード内画像クリックでフルスクリーンモーダルを開く
+          const imgTrigger = card.querySelector("[data-open-modal-id]");
+          if (imgTrigger) {
+            const openHandler = () => openFullscreenImageModal(item);
+            imgTrigger.addEventListener("click", openHandler);
+            imgTrigger.addEventListener("keydown", (e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                openHandler();
+              }
+            });
+          }
+
+          triviaGrid.appendChild(card);
+        });
+      }
+
+      /**
+       * フルスクリーン画像モーダルを開く
+       */
+      function openFullscreenImageModal(item) {
+        if (!item || !item.image) return;
+        state.isImageZoomed = false;
+        modalFullImage.classList.remove("is-zoomed");
+        modalFullImage.src = item.image;
+        modalFullImage.alt = item.title;
+        modalImageTitle.textContent = item.title;
+        modalImageCaption.textContent =
+          item.imageCaption || "画像をタップで拡大・縮小 / 背景または「×」で閉じる";
+
+        imageModal.classList.add("is-open");
+        document.body.style.overflow = "hidden";
+      }
+
+      /**
+       * フルスクリーン画像モーダルを閉じる
+       */
+      function closeFullscreenImageModal() {
+        imageModal.classList.remove("is-open");
+        state.isImageZoomed = false;
+        modalFullImage.classList.remove("is-zoomed");
+        document.body.style.overflow = "";
+      }
+
+      /**
+       * モーダル内画像の拡大・縮小トグル
+       */
+      function toggleModalImageZoom() {
+        state.isImageZoomed = !state.isImageZoomed;
+        modalFullImage.classList.toggle("is-zoomed", state.isImageZoomed);
+        toggleZoomBtn.textContent = state.isImageZoomed ? "🔎 元に戻す" : "🔍 拡大切替";
+      }
+
+      /**
+       * HTMLエスケープ処理
+       */
+      function escapeHtml(text) {
+        const div = document.createElement("div");
+        div.textContent = text;
+        return div.innerHTML;
+      }
+
+      // =========================================================
+      // 検索・フィルターイベント登録
+      // =========================================================
+      searchInput.addEventListener("input", (e) => {
+        state.searchQuery = e.target.value;
+        renderTriviaList();
+      });
+
+      clearSearchBtn.addEventListener("click", () => {
+        state.searchQuery = "";
+        searchInput.value = "";
+        searchInput.focus();
+        renderTriviaList();
+      });
+
+      onlyWithImageCheckbox.addEventListener("change", (e) => {
+        state.onlyWithImage = e.target.checked;
+        renderTriviaList();
+      });
+
+      resetAllFiltersBtn.addEventListener("click", () => {
+        state.searchQuery = "";
+        state.selectedTag = "すべて";
+        state.onlyWithImage = false;
+        searchInput.value = "";
+        onlyWithImageCheckbox.checked = false;
+        renderTagPills();
+        renderTriviaList();
+      });
+
+      // =========================================================
+      // フルスクリーン画像モーダルのイベント登録
+      // =========================================================
+      closeImageModalBtn.addEventListener("click", closeFullscreenImageModal);
+      toggleZoomBtn.addEventListener("click", toggleModalImageZoom);
+
+      modalFullImage.addEventListener("click", (e) => {
+        e.stopPropagation();
+        toggleModalImageZoom();
+      });
+
+      modalBackdrop.addEventListener("click", (e) => {
+        if (e.target === modalBackdrop) {
+          closeFullscreenImageModal();
+        }
+      });
+
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") {
+          if (imageModal.classList.contains("is-open")) {
+            closeFullscreenImageModal();
+          }
+          if (codeExportModal.classList.contains("is-open")) {
+            closeCodeExportModal();
+          }
+        }
+      });
+
+      // =========================================================
+      // 4ファイル構成（index.html / style.css / system.js / contents.js）
+      // エクスポートモーダル制御
+      // =========================================================
+      function getSeparatedFileContents() {
+        const styleCssCode = document.getElementById("app-style-css").textContent.trim();
+        const contentsJsCode = document.getElementById("app-contents-js").textContent.trim();
+        const systemJsCode = document.getElementById("app-system-js").textContent.trim();
+
+        const indexHtmlCode = `<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>まめちしき辞典 - ChiePedia</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&family=Shippori+Mincho:wght@600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"><\/script>
+  <!-- 分離したCSSファイルの読み込み -->
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="min-h-screen flex flex-col">
+  <!-- ヘッダー・検索バー・メイングリッド・画像モーダル本体 -->
+  ${document.querySelector("header").outerHTML}
+  ${document.querySelector("main").outerHTML}
+  ${document.querySelector("footer").outerHTML}
+  ${document.getElementById("imageModal").outerHTML}
+
   <!-- 分離した2つのJSファイルの読み込み -->
-  <script src="contents.js"></script>
-  <script src="system.js"></script>
+  <script src="contents.js"><\/script>
+  <script src="system.js"><\/script>
+</body>
+</html>`;
+
+        return {
+          "index.html": indexHtmlCode,
+          "style.css": styleCssCode,
+          "system.js": systemJsCode,
+          "contents.js": contentsJsCode
+        };
+      }
+
+      function renderCodeTab(fileName) {
+        state.activeCodeTab = fileName;
+        const files = getSeparatedFileContents();
+        codeViewerPre.textContent = files[fileName] || "";
+
+        codeFileTabs.querySelectorAll(".code-tab-btn").forEach((btn) => {
+          const isMatch = btn.getAttribute("data-file") === fileName;
+          btn.className = isMatch
+            ? "code-tab-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-amber-600 text-white"
+            : "code-tab-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-white text-slate-700 hover:bg-slate-50";
+        });
+      }
+
+      function closeCodeExportModal() {
+        codeExportModal.classList.remove("is-open");
+        document.body.style.overflow = "";
+      }
+
+      openCodeModalBtn.addEventListener("click", () => {
+        renderCodeTab(state.activeCodeTab);
+        codeExportModal.classList.add("is-open");
+        document.body.style.overflow = "hidden";
+      });
+
+      closeCodeModalBtn.addEventListener("click", closeCodeExportModal);
+
+      codeExportModal.addEventListener("click", (e) => {
+        if (e.target === codeExportModal) {
+          closeCodeExportModal();
+        }
+      });
+
+      codeFileTabs.querySelectorAll(".code-tab-btn").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          renderCodeTab(btn.getAttribute("data-file"));
+        });
+      });
+
+      copyCodeBtn.addEventListener("click", () => {
+        const textToCopy = codeViewerPre.textContent;
+        const tempTextarea = document.createElement("textarea");
+        tempTextarea.value = textToCopy;
+        document.body.appendChild(tempTextarea);
+        tempTextarea.select();
+        document.execCommand("copy");
+        document.body.removeChild(tempTextarea);
+
+        const originalLabel = copyCodeBtn.textContent;
+        copyCodeBtn.textContent = "✅ コピーしました！";
+        setTimeout(() => {
+          copyCodeBtn.textContent = originalLabel;
+        }, 1800);
+      });
+
+      // 初期描画の実行
+      renderTagPills();
+      renderTriviaList();
+    });
+  </script>
 </body>
 </html>
