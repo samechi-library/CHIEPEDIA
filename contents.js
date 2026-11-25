@@ -1,5 +1,5 @@
 // ★ここに豆知識スプレッドシートでデプロイしたGASのURL（末尾 /exec）を貼る
-const TRIVIA_GAS_URL = "https://script.google.com/macros/s/AKfycbyVLcrooL428ugDNe3a2FPTb-JybTnz2OtK79etcNkf_eanjef_X9fL91OE6-K6fFWwOA/exec";
+const TRIVIA_GAS_URL = "https://script.google.com/macros/s/AKfycbyRFZGZlBPJtvLjx6WtAXPMSnwEYKg6eS3FHirWmebezB9xRCVpPDm7Y6QW-oBzWbsZ1A/exec";
 
 // 画像格納フォルダのパス
 const IMAGE_BASE_DIR = "images/";
