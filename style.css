@@ -1,0 +1,163 @@
+:root {
+      --bg-paper: #FAF8F5;
+      --bg-card: #FFFFFF;
+      --text-ink: #1E293B;
+      --text-muted: #64748B;
+      --accent-amber: #D97706;
+      --accent-amber-light: #FEF3C7;
+      --accent-amber-dark: #B45309;
+      --border-subtle: #E2E8F0;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      margin: 0;
+      background-color: var(--bg-paper);
+      color: var(--text-ink);
+      font-family: 'Noto Sans JP', 'Inter', sans-serif;
+      line-height: 1.7;
+      overflow-x: hidden;
+    }
+
+    .font-serif-title {
+      font-family: 'Shippori Mincho', 'Noto Sans JP', serif;
+    }
+
+    /* ヘッダーのすりガラス効果 */
+    .glass-header {
+      background: rgba(250, 248, 245, 0.88);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(226, 232, 240, 0.9);
+    }
+
+    /* タグバーの横スクロール（スクロールバー非表示） */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    /* 豆知識カードのホバー・タップアニメーション */
+    .trivia-card {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 1.25rem;
+      box-shadow: 0 4px 20px -2px rgba(30, 41, 59, 0.05);
+      transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1),
+                  box-shadow 0.22s cubic-bezier(0.22, 1, 0.36, 1),
+                  border-color 0.22s ease;
+    }
+
+    @media (hover: hover) {
+      .trivia-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 12px 28px -6px rgba(30, 41, 59, 0.1);
+        border-color: #CBD5E1;
+      }
+    }
+
+    /* 添付画像サムネイル枠 */
+    .trivia-image-wrapper {
+      position: relative;
+      overflow: hidden;
+      border-radius: 0.875rem;
+      border: 1px solid #E2E8F0;
+      background: #F8FAFC;
+      cursor: zoom-in;
+    }
+
+    .trivia-image-wrapper img,
+    .trivia-image-wrapper svg {
+      transition: transform 0.35s ease;
+    }
+
+    @media (hover: hover) {
+      .trivia-image-wrapper:hover img,
+      .trivia-image-wrapper:hover svg {
+        transform: scale(1.03);
+      }
+    }
+
+    /* フルスクリーン画像モーダル */
+    .fullscreen-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      background-color: rgba(15, 23, 42, 0.94);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+    }
+
+    .fullscreen-modal.is-open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-image-stage {
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 4.5rem 1rem 5.5rem 1rem;
+      overflow: auto;
+    }
+
+    .modal-image-stage img {
+      max-width: 100%;
+      max-height: 100%;
+      width: auto;
+      height: auto;
+      object-fit: contain;
+      border-radius: 0.75rem;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.65);
+      transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+      transform-origin: center center;
+    }
+
+    .modal-image-stage img.is-zoomed {
+      transform: scale(1.65);
+      cursor: zoom-out;
+    }
+
+    /* 4ファイル構成コード表示モーダル */
+    .code-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 110;
+      background-color: rgba(15, 23, 42, 0.7);
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+    }
+
+    .code-modal.is-open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    /* iPad 11インチ (834px〜1194px) 向けの最適化調整 */
+    @media (min-width: 768px) and (max-width: 1280px) {
+      .ipad-container {
+        max-width: 1040px;
+      }
+    }
