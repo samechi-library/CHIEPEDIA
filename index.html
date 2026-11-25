@@ -151,27 +151,6 @@
       cursor: zoom-out;
     }
 
-    /* 4ファイル構成コード表示モーダル */
-    .code-modal {
-      position: fixed;
-      inset: 0;
-      z-index: 110;
-      background-color: rgba(15, 23, 42, 0.7);
-      backdrop-filter: blur(4px);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 1rem;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.2s ease;
-    }
-
-    .code-modal.is-open {
-      opacity: 1;
-      pointer-events: auto;
-    }
-
     /* iPad 11インチ (834px〜1194px) 向けの最適化調整 */
     @media (min-width: 768px) and (max-width: 1280px) {
       .ipad-container {
@@ -187,7 +166,7 @@
        ========================================================= -->
   <header class="glass-header sticky top-0 z-40">
     <div class="max-w-5xl ipad-container mx-auto px-4 sm:px-6 pt-3.5 pb-3">
-      <!-- トップバー：アプリタイトル ＆ 4ファイル出力ボタン -->
+      <!-- トップバー：アプリタイトル -->
       <div class="flex items-center justify-between gap-3 mb-3">
         <div class="flex items-center gap-2.5">
           <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 text-white flex items-center justify-center shadow-sm shrink-0">
@@ -201,26 +180,13 @@
               <h1 class="font-serif-title text-xl sm:text-2xl font-bold tracking-tight text-slate-900">
                 まめちしき辞典
               </h1>
-              <span class="hidden sm:inline-block text-xs font-semibold tracking-wider uppercase px-2 py-0.5 rounded-full bg-amber-100 text-amber-800">
+              <span class="inline-block text-xs font-semibold tracking-wider uppercase px-2 py-0.5 rounded-full bg-amber-100 text-amber-800">
                 ChiePedia
               </span>
             </div>
             <p class="text-xs text-slate-500">日常がちょっと楽しくなる雑学アーカイブ</p>
           </div>
         </div>
-
-        <!-- 4ファイル構成ソースコード表示ボタン -->
-        <button
-          id="openCodeModalBtn"
-          type="button"
-          class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs sm:text-sm font-medium bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 active:scale-95 transition shadow-xs shrink-0"
-          title="index.html / style.css / system.js / contents.js の4ファイルを表示"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
-          </svg>
-          <span>4ファイル構成</span>
-        </button>
       </div>
 
       <!-- 検索入力フォーム（豆知識名・タグ名の両方で検索可能） -->
@@ -622,8 +588,7 @@
         searchQuery: "",
         selectedTag: "すべて",
         onlyWithImage: false,
-        isImageZoomed: false,
-        activeCodeTab: "index.html"
+        isImageZoomed: false
       };
 
       // DOM要素の取得
@@ -644,14 +609,6 @@
       const modalImageCaption = document.getElementById("modalImageCaption");
       const closeImageModalBtn = document.getElementById("closeImageModalBtn");
       const toggleZoomBtn = document.getElementById("toggleZoomBtn");
-
-      // 4ファイル構成モーダル要素
-      const openCodeModalBtn = document.getElementById("openCodeModalBtn");
-      const codeExportModal = document.getElementById("codeExportModal");
-      const closeCodeModalBtn = document.getElementById("closeCodeModalBtn");
-      const codeFileTabs = document.getElementById("codeFileTabs");
-      const codeViewerPre = document.getElementById("codeViewerPre");
-      const copyCodeBtn = document.getElementById("copyCodeBtn");
 
       /**
        * カタカナをひらがなへ正規化・小文字化して検索しやすくする
@@ -956,107 +913,7 @@
           if (imageModal.classList.contains("is-open")) {
             closeFullscreenImageModal();
           }
-          if (codeExportModal.classList.contains("is-open")) {
-            closeCodeExportModal();
-          }
         }
-      });
-
-      // =========================================================
-      // 4ファイル構成（index.html / style.css / system.js / contents.js）
-      // エクスポートモーダル制御
-      // =========================================================
-      function getSeparatedFileContents() {
-        const styleCssCode = document.getElementById("app-style-css").textContent.trim();
-        const contentsJsCode = document.getElementById("app-contents-js").textContent.trim();
-        const systemJsCode = document.getElementById("app-system-js").textContent.trim();
-
-        const indexHtmlCode = `<!DOCTYPE html>
-<html lang="ja">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>まめちしき辞典 - ChiePedia</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&family=Shippori+Mincho:wght@600;700&display=swap" rel="stylesheet" />
-  <script src="https://cdn.tailwindcss.com"><\/script>
-  <!-- 分離したCSSファイルの読み込み -->
-  <link rel="stylesheet" href="style.css" />
-</head>
-<body class="min-h-screen flex flex-col">
-  <!-- ヘッダー・検索バー・メイングリッド・画像モーダル本体 -->
-  ${document.querySelector("header").outerHTML}
-  ${document.querySelector("main").outerHTML}
-  ${document.querySelector("footer").outerHTML}
-  ${document.getElementById("imageModal").outerHTML}
-
-  <!-- 分離した2つのJSファイルの読み込み -->
-  <script src="contents.js"><\/script>
-  <script src="system.js"><\/script>
-</body>
-</html>`;
-
-        return {
-          "index.html": indexHtmlCode,
-          "style.css": styleCssCode,
-          "system.js": systemJsCode,
-          "contents.js": contentsJsCode
-        };
-      }
-
-      function renderCodeTab(fileName) {
-        state.activeCodeTab = fileName;
-        const files = getSeparatedFileContents();
-        codeViewerPre.textContent = files[fileName] || "";
-
-        codeFileTabs.querySelectorAll(".code-tab-btn").forEach((btn) => {
-          const isMatch = btn.getAttribute("data-file") === fileName;
-          btn.className = isMatch
-            ? "code-tab-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-amber-600 text-white"
-            : "code-tab-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-white text-slate-700 hover:bg-slate-50";
-        });
-      }
-
-      function closeCodeExportModal() {
-        codeExportModal.classList.remove("is-open");
-        document.body.style.overflow = "";
-      }
-
-      openCodeModalBtn.addEventListener("click", () => {
-        renderCodeTab(state.activeCodeTab);
-        codeExportModal.classList.add("is-open");
-        document.body.style.overflow = "hidden";
-      });
-
-      closeCodeModalBtn.addEventListener("click", closeCodeExportModal);
-
-      codeExportModal.addEventListener("click", (e) => {
-        if (e.target === codeExportModal) {
-          closeCodeExportModal();
-        }
-      });
-
-      codeFileTabs.querySelectorAll(".code-tab-btn").forEach((btn) => {
-        btn.addEventListener("click", () => {
-          renderCodeTab(btn.getAttribute("data-file"));
-        });
-      });
-
-      copyCodeBtn.addEventListener("click", () => {
-        const textToCopy = codeViewerPre.textContent;
-        const tempTextarea = document.createElement("textarea");
-        tempTextarea.value = textToCopy;
-        document.body.appendChild(tempTextarea);
-        tempTextarea.select();
-        document.execCommand("copy");
-        document.body.removeChild(tempTextarea);
-
-        const originalLabel = copyCodeBtn.textContent;
-        copyCodeBtn.textContent = "✅ コピーしました！";
-        setTimeout(() => {
-          copyCodeBtn.textContent = originalLabel;
-        }, 1800);
       });
 
       // 初期描画の実行
